@@ -4,7 +4,13 @@ from packet import Packet
 from twisted.internet.protocol import Protocol
 
 class FBClient(Protocol):
+  def next_seq(self):
+    seq = self.seq
+    self.seq = self.seq + 1
+    return seq
+
   def readPacket(self):
+    print "HI"
     if len(self.buf) < header_length: return
     packet_data = self.buf[:header_length]
     packet = Packet(packet_data)
@@ -23,9 +29,10 @@ class FBClient(Protocol):
 
   def connectionMade(self):
     print "connected!"
+    self.seq = 0
     self.buf = ''
-    packet = Packet(True, False, 1, [])
-    print packet.encode()
+    packet = Packet(False, False, self.next_seq(), ["version"])
+    self.transport.write(packet.encode())
 
   def connectionLost(self, reason):
     print "lost connection: %s" % reason

@@ -11,7 +11,20 @@ class Packet:
     header = self.seqNumber & 0x3fffffff
     if self.originatedFromServer: header += 0x80000000
     if self.isResponse: header += 0x40000000
-    packet_size = 12
-    words = 0
-    packet = struct.pack(">III", header, packet_size, words)
+    word_cnt = len(self.words)
+    packet_size = 12 + reduce(lambda x,y: x+5+len(y), self.words, 0)
+    packet = struct.pack("<III", header, packet_size, word_cnt)
+    for word in self.words:
+      enc = ""
+      enc += struct.pack("<I", len(word))
+      enc += word.encode("cp1252")
+      enc += chr(0)
+      packet += enc
+
     return packet
+
+  def strtoword(string):
+    return string
+
+  def decode(buf):
+    pass

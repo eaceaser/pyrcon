@@ -1,16 +1,15 @@
 #!/usr/bin/env python
 
 import argparse
+import sys
 
-from fbclient import FBClient
+from fbclient import FBClient, FBFactory
 
 from twisted.internet import reactor
-from twisted.internet.protocol import Factory
 from twisted.internet.endpoints import TCP4ClientEndpoint
+from twisted.python import log
 
-class FBFactory(Factory):
-  def buildProtocol(self, addr):
-    return FBClient()
+log.startLogging(sys.stdout)
 
 parser = argparse.ArgumentParser(description="Test Frostbite RCon Client.")
 parser.add_argument('-H', '--hostname', dest='hostname', help='Server Hostname', required=True)

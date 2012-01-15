@@ -1,4 +1,4 @@
-class ServerState:
+class OpenStruct:
   def __init__(self):
     self.__dict__ = {}
 
@@ -17,3 +17,6 @@ class ServerState:
 
   def __str__(self):
     return "%s" % self.__dict__
+
+class ServerState(OpenStruct):
+  pass

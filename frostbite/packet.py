@@ -3,6 +3,8 @@ import struct
 HEADER_LENGTH = 12
 
 class Packet:
+  processSize = HEADER_LENGTH
+
   def __init__(self, originatedFromServer, isResponse, seqNumber, words):
     self.originatedFromServer = originatedFromServer
     self.isResponse = isResponse

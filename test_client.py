@@ -1,5 +1,4 @@
 #!/usr/bin/env python2
-
 import argparse
 import sys
 
@@ -18,4 +17,12 @@ client.start()
 response = client.send(commands.Version())
 
 print response.get()
-client.join()
+
+response = client.send(commands.ServerInfo()) 
+print response.get()
+
+response = client.send(commands.Login(args.password))
+print response.get()
+
+response = client.send(commands.AdminSay("hello there"))
+print response.get()

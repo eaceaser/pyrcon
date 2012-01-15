@@ -72,3 +72,23 @@ class Login(FrostbiteMessage):
     return r.get()
 
   filter = _handleHashed
+
+class AdminSay(FrostbiteMessage):
+  words = ["admin.say"]
+  def __init__(self, message):
+    self.words.extend([message, "all"])
+
+class AdminSayTeam(FrostbiteMessage):
+  words = ["admin.say"]
+  def __init__(self, message, teamId):
+    self.words.extend([message, "team", teamId])
+
+class AdminSaySquad(FrostbiteMessage):
+  words = ["admin.say"]
+  def __init__(self, message, teamId):
+    self.words.extend([message, "squad", teamId, squadId])
+
+class AdminSayPlayer(FrostbiteMessage):
+  words = ["admin.say"]
+  def __init__(self, message, teamId):
+    self.words.extend([message, "player", playerName])

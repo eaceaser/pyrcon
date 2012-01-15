@@ -8,16 +8,8 @@ from gevent import socket, queue
 from frostbite.serverstate import ServerState
 from frostbite.packet import Packet
 
-import hashlib
-
 logger = logging.getLogger("FBClient")
 logging.basicConfig(level=logging.DEBUG)
-def hash_pass(salt, password):
-  m = hashlib.md5()
-  decoded = salt.decode('hex')
-  m.update(decoded+password.encode("ascii"))
-  return m.hexdigest()
-
 class FBClient:
   seq = 0
 
@@ -73,7 +65,7 @@ class FBClient:
     filt, response = self._inflight[packet.seqNumber]
     if response is not None:
       del(self._inflight[packet.seqNumber])
-      gevent.spawn(filt, packet).link(response)
+      gevent.spawn(filt, packet, self).link(response)
       logger.debug("Received response for %s: %s" % (packet.seqNumber, packet))
     else:
       logger.err("Message received for an unknown sequence: %s", (packet.seqNumber))
@@ -132,70 +124,3 @@ class FBClient:
 #    else:
 #      d.errback("Must be logged in to perform this command.")
 #    return d
-#
-#  def serverInfo(self):
-#    d = defer.Deferred()
-#    server_info = Packet(False, False, self.next_seq(), ["serverInfo"])
-#    self.writePacket(server_info, d)
-#    return d
-#
-#  def login(self, password):
-#    od = defer.Deferred()
-#    d = defer.Deferred()
-#    login = Packet(False, False, self.next_seq(), ["login.hashed"])
-#    d.addCallback(lambda s: _loginHashed(h, password, od))
-#    d.addErrback(lambda e: od.errback(e))
-#    self.writePacket(login, d)
-#    return od
-#
-#  def _loginHashed(self, hash, password, d):
-#    hashed = hash_pass(salt, password)
-#    login = Packet(False, False, self.next_seq(), ["login.hashed", hashed])
-#    self.writePacket(login, d)
-#
-#  def receive_version(self, packet, d):
-#    version = " ".join(packet.words[1:])
-#    d.callback(version)
-#
-#  def receive_serverInfo(self, packet, d):
-#    serverstate = ServerState()
-#    serverstate.serverName = packet.words[1]
-#    serverstate.playerCount = int(packet.words[2])
-#    serverstate.maxPlayers = int(packet.words[3])
-#    serverstate.gameMode = packet.words[4]
-#    serverstate.mapName = packet.words[5]
-#    serverstate.currentRound = int(packet.words[6])
-#    serverstate.totalRounds = packet.words[7]
-#    serverstate.numTeams = int(packet.words[8])
-#    numTeams = self.serverstate.numTeams
-#    serverstate.teamScores = []
-#    for i in range(self.serverstate.numTeams):
-#      serverstate.teamScores.append(int(packet.words[8+i+1]))
-#    serverstate.targetScores = int(packet.words[8+numTeams+1])
-#    serverstate.onlineState = packet.words[8+numTeams+2]
-#    serverstate.isRanked = packet.words[8+numTeams+3]
-#    serverstate.hasPunkbuster = packet.words[8+numTeams+4]
-#    serverstate.hasPassword  = packet.words[8+numTeams+5]
-#    serverstate.serverUptime = int(packet.words[8+numTeams+6])
-#    serverstate.roundTime = int(packet.words[8+numTeams+7])
-#    serverstate.joinAddress = packet.words[8+numTeams+8]
-#    serverstate.punkbusterVersion = packet.words[8+numTeams+9]
-#    serverstate.joinQueueEnabled = packet.words[8+numTeams+10]
-#    serverstate.region = packet.words[8+numTeams+11]
-#    serverstate.pingSite = packet.words[8+numTeams+12]
-#    serverstate.country = packet.words[8+numTeams+13]
-#    d.callback(serverstate)
-#
-#  def receive_login_hashed(self, packet, d):
-#    rv = packet.words[0]
-#    if rv == u'InvalidPasswordHash':
-#      log.err("Invalid password hash")
-#      d.errback(rv)
-#      return
-#
-#    if len(packet.words) > 1:
-#      salt = packet.words[1]
-#      d.callback(salt)
-#    else:
-#      self.loggedIn = True
-#      d.callback("OK")

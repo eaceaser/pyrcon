@@ -92,3 +92,42 @@ class AdminSayPlayer(FrostbiteMessage):
   words = ["admin.say"]
   def __init__(self, message, teamId):
     self.words.extend([message, "player", playerName])
+
+class AdminListPlayers(FrostbiteMessage):
+  def _handlePlayerList(self, packet, client):
+    numParams = int(packet.words[1])
+    fieldNames = packet.words[2:2+numParams]
+    numPlayers = int(packet.words[2+numParams])
+    base = 2+numParams+1
+    players = []
+    for i in range(numPlayers):
+      playerFields = packet.words[base:base+numParams]
+      base = base + numParams
+      player = Player()
+      for idx,val in enumerate(playerFields):
+        player[fieldNames[idx]] = val
+      players.append(player)
+    return players
+  filter = _handlePlayerList
+
+class AdminListAllPlayers(AdminListPlayers):
+  words = ["admin.listPlayers", "all"]
+
+class AdminListTeamPlayers(AdminListPlayers):
+  words = ["admin.listPlayers", "team"]
+  def __init__(self, teamNum):
+    self.words.append(teamNum)
+
+class Logout(FrostbiteMessage):
+  words = ["logout"]
+
+class Quit(FrostbiteMessage):
+  words = ["quit"]
+
+# punkbuster commands
+class PunkBusterActive(FrostbiteMessage):
+  words = ["punkBuster.isActive"]
+  filter = lambda s,p,c: p.words[1]
+
+class PunkBusterActivate(FrostbiteMessage):
+  words = ["punkBuster.activate"]

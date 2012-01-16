@@ -20,3 +20,6 @@ class OpenStruct:
 
 class ServerState(OpenStruct):
   pass
+
+class Player(OpenStruct):
+  pass

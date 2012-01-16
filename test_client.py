@@ -24,5 +24,7 @@ print response.get()
 response = client.send(commands.Login(args.password))
 print response.get()
 
-response = client.send(commands.AdminSay("hello there"))
+response = client.send(commands.AdminListAllPlayers())
 print response.get()
+
+#client.send(commands.Quit())

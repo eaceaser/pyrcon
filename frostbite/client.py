@@ -8,7 +8,6 @@ from gevent import socket, queue
 from frostbite.packet import Packet
 
 logger = logging.getLogger("FBClient")
-logging.basicConfig(level=logging.DEBUG)
 class FBClient:
   seq = 0
 

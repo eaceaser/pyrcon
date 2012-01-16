@@ -5,7 +5,6 @@ import gevent.pool
 from gevent.event import AsyncResult
 from gevent import socket, queue
 
-from frostbite.serverstate import ServerState
 from frostbite.packet import Packet
 
 logger = logging.getLogger("FBClient")

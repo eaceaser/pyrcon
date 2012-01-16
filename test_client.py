@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 import argparse
 import sys
 
@@ -25,6 +25,9 @@ response = client.send(commands.Login(args.password))
 print response.get()
 
 response = client.send(commands.AdminListAllPlayers())
+print response.get()
+
+response = client.send(commands.MapListList())
 print response.get()
 
 #client.send(commands.Quit())

@@ -23,3 +23,9 @@ class ServerState(OpenStruct):
 
 class Player(OpenStruct):
   pass
+
+class Ban(OpenStruct):
+  pass
+
+class Map(OpenStruct):
+  pass

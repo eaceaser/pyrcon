@@ -49,14 +49,13 @@ class ServerInfo(FrostbiteMessage):
   filter = _toServerState
 
 class LoginSecret(FrostbiteMessage):
-  words = ["login.hashed"]
   def __init__(self, secret):
+    self.words = ["login.hashed"]
     self.words.append(secret)
 
 class Login(FrostbiteMessage):
-  words = ["login.hashed"]
-
   def __init__(self, password):
+    self.words = ["login.hashed"]
     self.password = password
 
   def _hashPass(self, salt, password):
@@ -74,23 +73,23 @@ class Login(FrostbiteMessage):
   filter = _handleHashed
 
 class AdminSay(FrostbiteMessage):
-  words = ["admin.say"]
   def __init__(self, message):
+    self.words = ["admin.say"]
     self.words.extend([message, "all"])
 
 class AdminSayTeam(FrostbiteMessage):
-  words = ["admin.say"]
   def __init__(self, message, teamId):
+    self.words = ["admin.say"]
     self.words.extend([message, "team", teamId])
 
 class AdminSaySquad(FrostbiteMessage):
-  words = ["admin.say"]
   def __init__(self, message, teamId):
+    words = ["admin.say"]
     self.words.extend([message, "squad", teamId, squadId])
 
 class AdminSayPlayer(FrostbiteMessage):
-  words = ["admin.say"]
   def __init__(self, message, teamId):
+    words = ["admin.say"]
     self.words.extend([message, "player", playerName])
 
 class AdminListPlayers(FrostbiteMessage):
@@ -111,69 +110,77 @@ class AdminListPlayers(FrostbiteMessage):
   filter = _handlePlayerList
 
 class AdminListAllPlayers(AdminListPlayers):
-  words = ["admin.listPlayers", "all"]
+  def __init__(self):
+    self.words = ["admin.listPlayers", "all"]
 
 class AdminListTeamPlayers(AdminListPlayers):
-  words = ["admin.listPlayers", "team"]
   def __init__(self, teamNum):
+    self.words = ["admin.listPlayers", "team"]
     self.words.append(teamNum)
 
 class Logout(FrostbiteMessage):
-  words = ["logout"]
+  def __init__(self):
+    self.words = ["logout"]
 
 class Quit(FrostbiteMessage):
-  words = ["quit"]
+  def __init__(self):
+    self.words = ["quit"]
 
 # punkbuster commands
 class PunkBusterActive(FrostbiteMessage):
-  words = ["punkBuster.isActive"]
+  def __init__(self):
+    self.words = ["punkBuster.isActive"]
   filter = lambda s,p,c: p.words[1]
 
 class PunkBusterActivate(FrostbiteMessage):
-  words = ["punkBuster.activate"]
+  def __init__(self):
+    self.words = ["punkBuster.activate"]
 
 # player commands
 class AdminKickPlayer(FrostbiteMessage):
-  words = ["admin.kickPlayer"]
   def __init__(self, playerName, reason = None):
-    words.append(playerName)
-    if reason is not None: words.append(reason)
+    self.words = ["admin.kickPlayer"]
+    self.words.append(playerName)
+    if reason is not None: self.words.append(reason)
 
 class AdminMovePlayer(FrostbiteMessage):
-  words = ["admin.movePlayer"]
   def __init__(self, playerName, teamId, squadId, forceKill):
-    words.extend([playerName, teamId, squadId, forceKill])
+    self.words = ["admin.movePlayer"]
+    self.words.extend([playerName, teamId, squadId, forceKill])
 
 class AdminKillPlayer(FrostbiteMessage):
-  words = ["admin.killPlayer"]
   def __init__(self, playerName):
-    words.append(playerName)
+    self.words = ["admin.killPlayer"]
+    self.words.append(playerName)
 
 # ban commands
 class BanListLoad(FrostbiteMessage):
-  words = ["banList.load"]
+  def __init__(self):
+    self.words = ["banList.load"]
 
 class BanListSave(FrostbiteMessage):
-  words = ["banList.save"]
+  def __init__(self):
+    self.words = ["banList.save"]
 
 class BanListAdd(FrostbiteMessage):
-  words = ["banList.add"]
   def __init__(self, idType, idVal, timeout, reason = None):
-    words.extend([idType, idVal, timeout])
-    if reason is not None: words.append(reason)
+    self.words = ["banList.add"]
+    self.words.extend([idType, idVal, timeout])
+    if reason is not None: self.words.append(reason)
 
 class BanListRemove(FrostbiteMessage):
-  words = ["banList.remove"]
   def __init__(self, idType, idVal):
-    words.extend([idType, idVal])
+    self.words = ["banList.remove"]
+    self.words.extend([idType, idVal])
 
 class BanListClear(FrostbiteMessage):
-  words = ["banList.clear"]
+  def __init__(self):
+    self.words = ["banList.clear"]
 
 class BanListList(FrostbiteMessage):
-  words = ["banList.list"]
   def __init__(self, offset = None):
-    if offset is not None: words.append(offset)
+    self.words = ["banList.list"]
+    if offset is not None: self.words.append(offset)
 
   def _parseBanList(self, packet, client):
     num = int(packet.words[1])
@@ -196,26 +203,31 @@ class BanListList(FrostbiteMessage):
 
 # map list commands
 class MapListLoad(FrostbiteMessage):
-  words = ["mapList.load"]
+  def __init__(self):
+    self.words = ["mapList.load"]
 
 class MapListSave(FrostbiteMessage):
-  words = ["mapList.save"]
+  def __init__(self):
+    self.words = ["mapList.save"]
 
 class MapListAdd(FrostbiteMessage):
-  words = ["mapList.add"]
   def __init__(self, mapName, gamemode, rounds, index = None):
+    self.words = ["mapList.add"]
     self.words.extend([mapName, gamemode, rounds])
 
 class MapListRemove(FrostbiteMessage):
-  words = ["mapList.remove"]
   def __init__(self, index):
-    words.append(index)
+    self.words = ["mapList.remove"]
+    self.words.append(index)
 
 class MapListClear(FrostbiteMessage):
-  words = ["mapList.clear"]
+  def __init__(self):
+    self.words = ["mapList.clear"]
 
 class MapListList(FrostbiteMessage):
-  words = ["mapList.list"]
+  def __init__(self):
+    self.words = ["mapList.list"]
+
   def _parseMapList(self, packet, client):
     numMaps = int(packet.words[1])
     wordsPerMap = packet.words[2]
@@ -234,28 +246,34 @@ class MapListList(FrostbiteMessage):
   filter = _parseMapList
 
 class MapListSetNextMapIndex(FrostbiteMessage):
-  words = ["mapList.setNextMapIndex"]
   def __init__(self, index):
-    words.append(index)
+    self.words = ["mapList.setNextMapIndex"]
+    self.words.append(index)
 
 class MapListGetMapIndicies(FrostbiteMessage):
-  words = ["mapList.getMapIndices"]
+  def __init__(self, index):
+    self.words = ["mapList.getMapIndices"]
+
   filter = lambda s,p,c: [p.words[1], p.words[2]]
 
 class MapListGetRounds(FrostbiteMessage):
-  words = ["mapList.getRounds"]
+  def __init__(self, index):
+    self.words = ["mapList.getRounds"]
+
   filter = lambda s,p,c: [p.words[1], p.words[2]]
 
 class MapListRunNextRound(FrostbiteMessage):
-  words = ["mapList.runNextRound"]
+  def __init__(self):
+    self.words = ["mapList.runNextRound"]
 
 class MapListRestartRound(FrostbiteMessage):
-  words = ["mapList.restartRound"]
+  def __init__(self):
+    self.words = ["mapList.restartRound"]
 
 class MapListEndRound(FrostbiteMessage):
-  words = ["mapList.endRound"]
   def __init__(self, winningTeamId):
-    words.append(winningTeamId)
+    self.words = ["mapList.endRound"]
+    self.words.append(winningTeamId)
 
 # class MapListAvailableMaps(FrostbiteMessage)
 

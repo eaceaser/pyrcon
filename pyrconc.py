@@ -39,29 +39,16 @@ class SimpleJsonClient(object):
       jsonResponse = json.loads(response)
       rv.set(jsonResponse["response"])
 
-  def listServers(self):
+  def nextRound(self):
     rv = event.AsyncResult()
-    j = { "methodName": "getServerIds" }
-    self._send_queue.put((json.dumps(j), rv))
-    return rv
-
-  def hasServer(self, name):
-    rv = event.AsyncResult()
-    j = { "methodName": "hasServerId", "arguments": [name] }
-    s = json.dumps(j)
-    self._send_queue.put((s, rv))
-    return rv
-
-  def nextRound(self, name):
-    rv = event.AsyncResult()
-    j = { "serverName": name, "methodName": "nextRound" }
+    j = { "server": True, "methodName": "nextRound" }
     s= json.dumps(j)
     self._send_queue.put((s, rv))
     return rv
 
-  def getServerInfo(self, name):
+  def getServerInfo(self):
     rv = event.AsyncResult()
-    j = { "serverName": name, "methodName": "info" }
+    j = { "server": True, "methodName": "info" }
     s = json.dumps(j)
     self._send_queue.put((s, rv))
     return rv
@@ -88,48 +75,22 @@ class RootContext(Context):
     self._client = client
     self._prompt = "PyRCon"
 
-    ls = argparse.ArgumentParser(prog='ls', description="List available BF3 Servers.", add_help=False)
-    svr = argparse.ArgumentParser(prog='svr', description="Change to a specified server.", add_help=False)
-    svr.add_argument('name', metavar='SERVER', help='Server name')
-
-    self._validCommands = {
-      'ls': (ls, self.listServers),
-      'svr': (svr, self.changeServer)
-    }
-
-  def listServers(self, args):
-    rv = self._client.listServers()
-    val = rv.get()
-    return "\n".join(val)
-
-  def changeServer(self, args):
-    name = args.name
-    if self._client.hasServer(name).get():
-      return ServerContext(self._client, name)
-    else:
-      return "Server %s is unknown." % name
-
-class ServerContext(Context):
-  def __init__(self, client, name):
-    self._name = name
-    self._prompt = name
-    self._client = client
-
     nextRound = argparse.ArgumentParser(prog='nextround', description="Switch server to the next round.", add_help=False)
     info = argparse.ArgumentParser(prog='info', description="Basic Server Info.", add_help=False)
+
     self._validCommands = {
       'info': (info, self._serverInfo),
       'nextround': (nextRound, self._nextRound)
     }
 
   def _serverInfo(self, args):
-    rv = self._client.getServerInfo(self._name)
+    rv = self._client.getServerInfo()
     d = rv.get()
     s = ""
     return "\n".join(["%s: %s" % (x, d[x]) for x in d])
 
   def _nextRound(self, args):
-    rv = self._client.nextRound(self._name)
+    rv = self._client.nextRound()
     rv.get()
     return "OK"
 

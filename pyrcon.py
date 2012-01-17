@@ -33,9 +33,8 @@ config = load(configFile, Loader=Loader)
 configFile.close()
 
 print config
-control = Control()
-for serverConfig in config['rcon']:
-  server = BFServer(serverConfig["host"], serverConfig["port"], serverConfig["password"])
-  control.addServer(serverConfig["name"], server)
+serverConfig = config['rcon']
+server = BFServer(serverConfig["host"], serverConfig["port"], serverConfig["password"])
+control = Control(server)
 
 simple.simpleServer(control)

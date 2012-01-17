@@ -24,9 +24,8 @@ class SimpleJsonServer:
         if "arguments" in j:
           arguments = j["arguments"]
 
-        if "serverName" in j:
-          serverName = j["serverName"]
-          server = self._control.getServer(serverName)
+        if "server" in j and j["server"] == True:
+          server = self._control.getServer()
           method = getattr(server, methodName)
         else:
           method = getattr(self._control, methodName)

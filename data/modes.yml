@@ -1,0 +1,37 @@
+ConquestLarge0:
+  teams:
+    0: Neutral
+    1: US
+    2: RU
+ConquestSmall0:
+  teams:
+    0: Neutral
+    1: US
+    2: RU
+ConquestSmall1:
+  teams:
+    0: Neutral
+    1: US
+    2: RU
+RushLarge0:
+  teams:
+    0: Neutral
+    1: Attackers
+    2: Defenders
+SquadRush0:
+  teams:
+    0: Neutral
+    1: Attackers
+    2: Defenders
+TeamDeathMatch0:
+  teams:
+    0: Neutral
+    1: US
+    2: RU
+SquadDeathMatch0:
+  teams:
+    0: Neutral
+    1: Squad 1
+    2: Squad 2
+    3: Squad 3
+    4: Squad 4

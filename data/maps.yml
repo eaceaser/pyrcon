@@ -1,0 +1,132 @@
+MP_001:
+  modes:
+  - ConquestLarge0
+  - ConquestSmall0
+  - RushLarge0
+  - SquadRush0
+  - TeamDeathMatch0
+  - SquadDeathMatch0
+  name: Grand Bazaar
+
+MP_003:
+  modes:
+  - ConquestLarge0
+  - ConquestSmall0
+  - RushLarge0
+  - SquadRush0
+  - TeamDeathMatch0
+  - SquadDeathMatch0
+  name: Tehran Highway
+
+MP_007:
+  modes:
+  - ConquestLarge0
+  - ConquestSmall0
+  - RushLarge0
+  - SquadRush0
+  - TeamDeathMatch0
+  - SquadDeathMatch0
+  name: Caspian Border
+
+MP_011:
+  modes:
+  - ConquestLarge0
+  - ConquestSmall0
+  - RushLarge0
+  - SquadRush0
+  - TeamDeathMatch0
+  - SquadDeathMatch0
+  name: Seine Crossing
+
+MP_012:
+  modes:
+  - ConquestLarge0
+  - ConquestSmall0
+  - RushLarge0
+  - SquadRush0
+  - TeamDeathMatch0
+  - SquadDeathMatch0
+  name: Operation Firestorm
+
+MP_013:
+  modes:
+  - ConquestLarge0
+  - ConquestSmall0
+  - RushLarge0
+  - SquadRush0
+  - TeamDeathMatch0
+  - SquadDeathMatch0
+  name: Damavand Peak
+
+MP_017:
+  modes:
+  - ConquestLarge0
+  - ConquestSmall0
+  - RushLarge0
+  - SquadRush0
+  - TeamDeathMatch0
+  - SquadDeathMatch0
+  name: Noshahr Canals
+
+MP_018:
+  modes:
+  - ConquestLarge0
+  - ConquestSmall0
+  - RushLarge0
+  - SquadRush0
+  - TeamDeathMatch0
+  - SquadDeathMatch0
+  name: Kharg Island
+
+MP_Subway:
+  modes:
+  - ConquestLarge0
+  - ConquestSmall0
+  - RushLarge0
+  - SquadRush0
+  - TeamDeathMatch0
+  - SquadDeathMatch0
+  name: Operation Metro
+
+XP1_002:
+  modes:
+  - ConquestLarge0
+  - ConquestSmall0
+  - ConquestSmall1
+  - RushLarge0
+  - SquadRush0
+  - TeamDeathMatch0
+  - SquadDeathMatch0
+  name: Gulf of Oman
+
+XP1_001:
+  modes:
+  - ConquestLarge0
+  - ConquestSmall0
+  - ConquestSmall1
+  - RushLarge0
+  - SquadRush0
+  - TeamDeathMatch0
+  - SquadDeathMatch0
+  name: Strike at Karkand
+
+XP1_003:
+  modes:
+  - ConquestLarge0
+  - ConquestSmall0
+  - ConquestSmall1
+  - RushLarge0
+  - SquadRush0
+  - TeamDeathMatch0
+  - SquadDeathMatch0
+  name: Sharqi Peninsula
+
+XP1_004:
+  modes:
+  - ConquestLarge0
+  - ConquestSmall0
+  - RushLarge0
+  - SquadRush0
+  - TeamDeathMatch0
+  - SquadDeathMatch0
+  name: Wake Island

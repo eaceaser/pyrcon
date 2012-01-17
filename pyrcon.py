@@ -6,6 +6,9 @@ import logging
 from yaml import load, dump
 
 from bfserver import BFServer
+from gevent import backdoor
+from server import simple
+from control import Control
 
 try:
   from yaml import CLoader as Loader, CDumper as Dumper
@@ -20,7 +23,7 @@ args = parser.parse_args()
 level = logging.WARNING
 if args.verbose == 1:
   level = logging.INFO
-elif args.verbose == 2:
+elif args.verbose >= 2:
   level = logging.DEBUG
 
 logging.basicConfig(level=level)
@@ -30,5 +33,9 @@ config = load(configFile, Loader=Loader)
 configFile.close()
 
 print config
-for serverConfig in config['servers']:
+control = Control()
+for serverConfig in config['rcon']:
   server = BFServer(serverConfig["host"], serverConfig["port"], serverConfig["password"])
+  control.addServer(serverConfig["name"], server)
+
+simple.simpleServer(control)

@@ -1,6 +1,7 @@
 import json
 import logging
 
+from gevent import event
 from gevent.server import StreamServer
 
 logger = logging.getLogger("SimpleServer")
@@ -31,7 +32,8 @@ class SimpleJsonServer:
           method = getattr(self._control, methodName)
 
         rv = method(*arguments)
-        response = { 'response': rv }
+        # for the sake of this simple server we just block.
+        response = { 'response': rv.get() }
         responseStr = json.dumps(response)
         logger.debug("Sending response: %s" % json.dumps(response))
         fileobj.write(responseStr)

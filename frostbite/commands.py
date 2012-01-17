@@ -8,7 +8,7 @@ class FrostbiteMessage(object):
   def toPacket(self, seq):
     return Packet(False, False, seq, self.words)
 
-  filter = lambda self,p,c: p
+  filter = lambda self,p,c: p.words[0]
 
 class Version(FrostbiteMessage):
   words = ["version"]
@@ -204,7 +204,7 @@ class MapListSave(FrostbiteMessage):
 class MapListAdd(FrostbiteMessage):
   words = ["mapList.add"]
   def __init__(self, mapName, gamemode, rounds, index = None):
-    words.extend([mapName, gamemode, rounds])
+    self.words.extend([mapName, gamemode, rounds])
 
 class MapListRemove(FrostbiteMessage):
   words = ["mapList.remove"]
@@ -225,9 +225,9 @@ class MapListList(FrostbiteMessage):
       mapslice = packet.words[pos:pos+wordsPerMap]
       pos = pos + wordsPerMap
       map = Map()
-      map["name"] = mapslice[0]
-      map["gamemode"] = mapslice[1]
-      map["rounds"] = mapslice[2]
+      map.name = mapslice[0]
+      map.gamemode = mapslice[1]
+      map.rounds = mapslice[2]
       maps.append(map)
 
     return maps

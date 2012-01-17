@@ -66,6 +66,13 @@ class SimpleJsonClient(object):
     self._send_queue.put((s, rv))
     return rv
 
+  def getVersion(self):
+    rv = event.AsyncResult()
+    j = { "server": True, "methodName": "version" }
+    s = json.dumps(j)
+    self._send_queue.put((s, rv))
+    return rv
+
   def restartRound(self):
     rv = event.AsyncResult()
     j = { "server": True, "methodName": "restartRound" }
@@ -73,21 +80,37 @@ class SimpleJsonClient(object):
     self._send_queue.put((s, rv))
     return rv
 
+  def listMaps(self):
+    rv = event.AsyncResult()
+    j = { "server": True, "methodName": "listMaps" }
+    s = json.dumps(j)
+    self._send_queue.put((s, rv))
+    return rv
+
+  def addMap(self, name, gamemode, rounds):
+    rv = event.AsyncResult()
+    j = { "server": True, "methodName": "addMap" }
+    j["arguments"] = [name, gamemode, rounds]
+    s = json.dumps(j)
+    self._send_queue.put((s, rv))
+    return rv
+
 class Context(object):
   def help(self, cmd=None):
     if cmd is None:
-      self._parser.print_help()
+      for i in self._parsers:
+        self._parsers[i].print_help()
     else:
-      parser = self._validCommands[cmd]
+      parser = self._parsers[cmd]
       parser.print_help()
 
   def prompt(self):
     return self._prompt
 
-  def execute(self, args):
+  def execute(self, cmd, args):
     try:
-      parse = self._parser.parse_args(args)
-      return parse.func(args)
+      parse = self._parsers[cmd].parse_args(args)
+      return parse.func(parse)
     except ParsingError:
       return "%s is an invalid argument or command." % (" ".join(args))
 
@@ -95,39 +118,74 @@ class RootContext(Context):
   def __init__(self, client):
     self._client = client
     self._prompt = "PyRCon"
-    self._parser = InternalParser("", add_help=False)
 
-    subparsers = self._parser.add_subparsers(title='commands')
-
-    nextRound = subparsers.add_parser('nextround', description="Switch server to the next round.", usage="nextround: Switch server to the next round.", add_help=False)
+    nextRound = InternalParser('nextround', description="Switch server to the next round.", usage="nextround: Switch server to the next round.", add_help=False)
     nextRound.set_defaults(func=self._nextRound)
 
-    restartRound = subparsers.add_parser('restartround', description="Restart current round.", add_help=False)
+    restartRound = InternalParser('restartround', description="Restart current round.", add_help=False)
     restartRound.set_defaults(func=self._restartRound)
 
-    info = subparsers.add_parser('info', description="Basic Server Info.", usage="info: Basic Server Info.", add_help=False)
+    info = InternalParser('info', description="Basic Server Info.", usage="info: Basic Server Info.", add_help=False)
     info.set_defaults(func=self._serverInfo)
 
-    self._validCommands = {
+    version = InternalParser('version', description="Server Version.", usage="version: BF3 Server Version.", add_help=False)
+    version.set_defaults(func=self._version)
+
+    maps = InternalParser('maps', description="Maps Context", add_help=False)
+    maps.set_defaults(func=self._maps)
+
+    self._parsers = {
       'info': info,
-      'nextround': nextRound
+      'nextround': nextRound,
+      'version': version,
+      'maps': maps
     }
 
   def _serverInfo(self, args):
     rv = self._client.getServerInfo()
     d = rv.get()
-    s = ""
     return "\n".join(["%s: %s" % (x, d[x]) for x in d])
+
+  def _version(self, args):
+    rv = self._client.getVersion()
+    d = rv.get()
+    return d
 
   def _nextRound(self, args):
     rv = self._client.nextRound()
-    rv.get()
-    return "OK"
+    return rv.get()
 
   def _restartRound(self, args):
     rv = self._client.restartRound()
-    rv.get()
-    return "OK"
+    return rv.get()
+
+  def _maps(self, args):
+    context = MapsContext(client)
+    return context
+
+class MapsContext(Context):
+  _prompt = "maps"
+  def __init__(self, client):
+    self._client = client
+
+    maplist = InternalParser("list", add_help=False)
+    maplist.set_defaults(func=self._maplist)
+
+    add = InternalParser("add", add_help=False)
+    add.set_defaults(func=self._add)
+    add.add_argument("name")
+    add.add_argument("gamemode")
+    add.add_argument("rounds")
+
+    self._parsers = {'list': maplist, 'add': add }
+
+  def _maplist(self, args):
+    rv = self._client.listMaps()
+    return rv.get()
+
+  def _add(self, args):
+    rv = self._client.addMap(args.name, args.gamemode, args.rounds)
+    return rv.get()
 
 def printHelp(helpDict):
   for cmd in helpDict:
@@ -160,7 +218,7 @@ class Console(Greenlet):
       elif cmd == "..":
         self._contexts.pop()
       else:
-        rv = currentContext.execute(parts)
+        rv = currentContext.execute(cmd, args)
         if type(rv) == str or type(rv) == unicode:
           print rv
         elif isinstance(rv, Context):

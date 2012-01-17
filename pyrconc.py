@@ -95,6 +95,13 @@ class SimpleJsonClient(object):
     self._send_queue.put((s, rv))
     return rv
 
+  def knownMaps(self):
+    rv = event.AsyncResult()
+    j = { "server": False, "methodName": "knownMaps" }
+    s = json.dumps(j)
+    self._send_queue.put((s, rv))
+    return rv
+
 class Context(object):
   def help(self, cmd=None):
     if cmd is None:
@@ -131,14 +138,18 @@ class RootContext(Context):
     version = InternalParser('version', description="Server Version.", usage="version: BF3 Server Version.", add_help=False)
     version.set_defaults(func=self._version)
 
-    maps = InternalParser('maps', description="Maps Context", add_help=False)
+    maps = InternalParser('maps', description="BF3 Server Map List Context", add_help=False)
     maps.set_defaults(func=self._maps)
+
+    knownmaps = InternalParser('knownmaps', description="Known Maps.", add_help=False)
+    knownmaps.set_defaults(func=self._knownMaps)
 
     self._parsers = {
       'info': info,
       'nextround': nextRound,
       'version': version,
-      'maps': maps
+      'maps': maps,
+      'knownmaps': knownmaps
     }
 
   def _serverInfo(self, args):
@@ -162,6 +173,10 @@ class RootContext(Context):
   def _maps(self, args):
     context = MapsContext(client)
     return context
+
+  def _knownMaps(self, args):
+    rv = self._client.knownMaps()
+    return "%s" % rv.get()
 
 class MapsContext(Context):
   _prompt = "maps"

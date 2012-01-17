@@ -17,6 +17,8 @@ except ImportError:
 
 parser = argparse.ArgumentParser(description="PyRCon - Python Battlefield 3 RCon Manager")
 parser.add_argument('-c', '--config', dest='config', help='Configuration File', required = True)
+parser.add_argument('--mapdata', dest='mapfile', help='Map data file', default='./data/maps.yml')
+parser.add_argument('--modedata', dest='modefile', help='Mode data file', default='./data/modes.yml')
 parser.add_argument('--verbose', '-v', dest='verbose', action='count', help='Verbose logging.')
 args = parser.parse_args()
 
@@ -28,13 +30,24 @@ elif args.verbose >= 2:
 
 logging.basicConfig(level=level)
 
+logger = logging.getLogger("")
+logger.info("Loading config file.")
 configFile = io.open(args.config, 'r')
 config = load(configFile, Loader=Loader)
 configFile.close()
 
-print config
+logger.info("Loading maps data.")
+mapsFile = io.open(args.mapfile, 'r')
+mapData = load(mapsFile, Loader=Loader)
+mapsFile.close()
+
+logger.info("Loading mode data.")
+modeFile = io.open(args.modefile, 'r')
+modeData = load(modeFile, Loader=Loader)
+modeFile.close()
+
 serverConfig = config['rcon']
 server = BFServer(serverConfig["host"], serverConfig["port"], serverConfig["password"])
-control = Control(server)
+control = Control(server, mapData, modeData)
 
 simple.simpleServer(control)

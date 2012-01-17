@@ -18,10 +18,15 @@ class SimpleJsonServer:
       try:
         j = json.loads(line)
         methodName = j["methodName"]
+        arguments = []
+        if "arguments" in j:
+          arguments = j["arguments"]
         method = getattr(self._control, methodName)
-        rv = method()
+        rv = method(*arguments)
         response = { 'methodName': methodName, 'response': rv }
-        fileobj.write(json.dumps(response))
+        responseStr = json.dumps(response)
+        logger.debug("Sending response: %s" % json.dumps(response))
+        fileobj.write(responseStr)
         fileobj.write("\n")
       except ValueError:
         self._socket.send("blah!\n")

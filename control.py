@@ -8,5 +8,9 @@ class Control:
   def getServerIds(self):
     return self._servers.keys()
 
-  def getServer(self, name):
-    return self._servers[name]
+  def hasServerId(self, name):
+    return name in self._servers
+
+  def getServerInfo(self, name):
+    info = self._servers[name].info().dict()
+    return info

@@ -44,3 +44,6 @@ class BFServer:
     self._attemptConnect()
     self._getServerState()
     self._login()
+
+  def info(self):
+    return self._serverInfo

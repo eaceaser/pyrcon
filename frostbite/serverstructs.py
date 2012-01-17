@@ -18,6 +18,9 @@ class OpenStruct:
   def __str__(self):
     return "%s" % self.__dict__
 
+  def dict(self):
+    return self.__dict__
+
 class ServerState(OpenStruct):
   pass
 

@@ -46,7 +46,7 @@ class BFServer(object):
 
     self._attemptConnect()
     self._login()
-    self._loadMapList()
+#    self._loadMapList()
 
   def info(self):
     assert self._client is not None
@@ -72,12 +72,16 @@ class BFServer(object):
 
   def listMaps(self):
     assert self._isLoggedIn()
-    assert self._mapListIsLoaded()
     cmd = commands.MapListList()
     innerrv = self._client.send(cmd)
     rv = event.AsyncResult()
-    gevent.spawn(lambda: map(lambda i: i.name, innerrv.get())).link(rv)
+    gevent.spawn(lambda: map(lambda i: [i.name, i.gamemode, i.rounds], innerrv.get())).link(rv)
     return rv
+
+  def getMapIndices(self):
+    assert self._isLoggedIn()
+    cmd = commands.MapListGetMapIndices()
+    return self._client.send(cmd)
 
   def addMap(self, name, gamemode, rounds):
     assert self._isLoggedIn()

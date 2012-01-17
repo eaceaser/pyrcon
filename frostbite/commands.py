@@ -230,7 +230,7 @@ class MapListList(FrostbiteMessage):
 
   def _parseMapList(self, packet, client):
     numMaps = int(packet.words[1])
-    wordsPerMap = packet.words[2]
+    wordsPerMap = int(packet.words[2])
     pos = 3
     maps = []
     for i in range(numMaps):
@@ -250,8 +250,8 @@ class MapListSetNextMapIndex(FrostbiteMessage):
     self.words = ["mapList.setNextMapIndex"]
     self.words.append(index)
 
-class MapListGetMapIndicies(FrostbiteMessage):
-  def __init__(self, index):
+class MapListGetMapIndices(FrostbiteMessage):
+  def __init__(self):
     self.words = ["mapList.getMapIndices"]
 
   filter = lambda s,p,c: [p.words[1], p.words[2]]

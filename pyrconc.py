@@ -87,6 +87,13 @@ class SimpleJsonClient(object):
     self._send_queue.put((s, rv))
     return rv
 
+  def listMapIndices(self):
+    rv = event.AsyncResult()
+    j = { "server": True, "methodName": "getMapIndices"}
+    s = json.dumps(j)
+    self._send_queue.put((s, rv))
+    return rv
+
   def addMap(self, name, gamemode, rounds):
     rv = event.AsyncResult()
     j = { "server": True, "methodName": "addMap" }
@@ -118,8 +125,10 @@ class Context(object):
     try:
       parse = self._parsers[cmd].parse_args(args)
       return parse.func(parse)
+    except KeyError:
+      return "%s is an invalid command." % cmd
     except ParsingError:
-      return "%s is an invalid argument or command." % (" ".join(args))
+      return "%s has invalid arguments." % (" ".join(args))
 
 class RootContext(Context):
   def __init__(self, client):
@@ -176,7 +185,9 @@ class RootContext(Context):
 
   def _knownMaps(self, args):
     rv = self._client.knownMaps()
-    return "%s" % rv.get()
+    d = rv.get()
+    s = ["%s (%s): %s" % (d[m]["name"], m, " ".join(d[m]["modes"])) for m in d]
+    return "\n".join(s)
 
 class MapsContext(Context):
   _prompt = "maps"
@@ -196,16 +207,26 @@ class MapsContext(Context):
 
   def _maplist(self, args):
     rv = self._client.listMaps()
-    return rv.get()
+    l = rv.get()
+
+    v = self._client.listMapIndices().get()
+    currentIndex, nextIndex = [int(x) for x in v]
+    s = ""
+    print "(* = Current Map, ! = Next Map)"
+    for (i,k) in enumerate(l):
+      prefix = " "
+      if i == currentIndex:
+        prefix = "*"
+      elif i == nextIndex:
+        prefix = "!"
+
+      s += "%s%s. %s\t%s\t%s" % (prefix, i+1, k[0], k[1], k[2])
+      s += "\n"
+    return s
 
   def _add(self, args):
     rv = self._client.addMap(args.name, args.gamemode, args.rounds)
     return rv.get()
-
-def printHelp(helpDict):
-  for cmd in helpDict:
-    argparse = helpDict[cmd][0]
-    print argparse.format_usage().rstrip()
 
 class Console(Greenlet):
   def __init__(self,client):

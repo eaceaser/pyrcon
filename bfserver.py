@@ -46,4 +46,9 @@ class BFServer:
     self._login()
 
   def info(self):
-    return self._serverInfo
+    return self._serverInfo.dict()
+
+  def nextRound(self):
+    cmd = commands.MapListRunNextRound()
+    rv = self._client.send(cmd)
+    return "OK"

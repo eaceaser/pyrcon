@@ -52,9 +52,16 @@ class SimpleJsonClient(object):
     self._send_queue.put((s, rv))
     return rv
 
+  def nextRound(self, name):
+    rv = event.AsyncResult()
+    j = { "serverName": name, "methodName": "nextRound" }
+    s= json.dumps(j)
+    self._send_queue.put((s, rv))
+    return rv
+
   def getServerInfo(self, name):
     rv = event.AsyncResult()
-    j = { "methodName": "getServerInfo", "arguments": [name] }
+    j = { "serverName": name, "methodName": "info" }
     s = json.dumps(j)
     self._send_queue.put((s, rv))
     return rv
@@ -108,14 +115,23 @@ class ServerContext(Context):
     self._prompt = name
     self._client = client
 
+    nextRound = argparse.ArgumentParser(prog='nextround', description="Switch server to the next round.", add_help=False)
     info = argparse.ArgumentParser(prog='info', description="Basic Server Info.", add_help=False)
-    self._validCommands = {'info': (info, self._serverInfo)}
+    self._validCommands = {
+      'info': (info, self._serverInfo),
+      'nextround': (nextRound, self._nextRound)
+    }
 
   def _serverInfo(self, args):
     rv = self._client.getServerInfo(self._name)
     d = rv.get()
     s = ""
     return "\n".join(["%s: %s" % (x, d[x]) for x in d])
+
+  def _nextRound(self, args):
+    rv = self._client.nextRound(self._name)
+    rv.get()
+    return "OK"
 
 def printHelp(helpDict):
   for cmd in helpDict:
@@ -142,6 +158,8 @@ class Console(Greenlet):
 
       if cmd == "help":
         printHelp(currentContext.commands())
+      elif cmd == "..":
+        self._contexts.pop()
       else:
         rv = currentContext.execute(cmd, args)
         if type(rv) == str or type(rv) == unicode:

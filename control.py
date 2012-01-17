@@ -11,6 +11,9 @@ class Control:
   def hasServerId(self, name):
     return name in self._servers
 
+  def getServer(self, name):
+    return self._servers[name]
+
   def getServerInfo(self, name):
     info = self._servers[name].info().dict()
     return info

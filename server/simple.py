@@ -19,11 +19,20 @@ class SimpleJsonServer:
         j = json.loads(line)
         methodName = j["methodName"]
         arguments = []
+        method = None
+
         if "arguments" in j:
           arguments = j["arguments"]
-        method = getattr(self._control, methodName)
+
+        if "serverName" in j:
+          serverName = j["serverName"]
+          server = self._control.getServer(serverName)
+          method = getattr(server, methodName)
+        else:
+          method = getattr(self._control, methodName)
+
         rv = method(*arguments)
-        response = { 'methodName': methodName, 'response': rv }
+        response = { 'response': rv }
         responseStr = json.dumps(response)
         logger.debug("Sending response: %s" % json.dumps(response))
         fileobj.write(responseStr)

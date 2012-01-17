@@ -1,4 +1,4 @@
-class Control:
+class Control(object):
   def __init__(self, server):
     self._server = server
 

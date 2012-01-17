@@ -1,4 +1,5 @@
-class OpenStruct:
+# XXX: Replace with something sane, like actual objects, or protobufs.
+class OpenStruct(object):
   def __init__(self):
     self.__dict__ = {}
 

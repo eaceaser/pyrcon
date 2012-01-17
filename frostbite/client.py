@@ -8,7 +8,7 @@ from gevent import socket, queue
 from frostbite.packet import Packet
 
 logger = logging.getLogger("FBClient")
-class FBClient:
+class FBClient(object):
   seq = 0
 
   def __init__(self, hostname, port):

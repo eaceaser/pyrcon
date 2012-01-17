@@ -4,7 +4,7 @@ from frostbite.serverstructs import ServerState, Map, Player, Ban
 
 import hashlib
 
-class FrostbiteMessage:
+class FrostbiteMessage(object):
   def toPacket(self, seq):
     return Packet(False, False, seq, self.words)
 

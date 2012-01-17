@@ -1,7 +1,7 @@
 from frostbite import client, commands
 
 # class which contains stateful knowledge of a BF3 Server
-class BFServer:
+class BFServer(object):
   def _hasClient(self):
     return self._client is not None
 

@@ -10,6 +10,19 @@ import gevent.hub
 from gevent import socket, queue, event
 from gevent import Greenlet
 
+class ParsingError(Exception):
+  pass
+
+class InternalParser(argparse.ArgumentParser):
+  def exit(self, status=0, message=None):
+    raise ParsingError
+
+  def _print_message(self, message, file=None):
+    if message:
+      if file is None:
+        file = _sys.stdout
+      file.write(message)
+
 class SimpleJsonClient(object):
   def __init__(self, hostname, port):
     self._socket = None
@@ -42,7 +55,7 @@ class SimpleJsonClient(object):
   def nextRound(self):
     rv = event.AsyncResult()
     j = { "server": True, "methodName": "nextRound" }
-    s= json.dumps(j)
+    s = json.dumps(j)
     self._send_queue.put((s, rv))
     return rv
 
@@ -53,34 +66,51 @@ class SimpleJsonClient(object):
     self._send_queue.put((s, rv))
     return rv
 
+  def restartRound(self):
+    rv = event.AsyncResult()
+    j = { "server": True, "methodName": "restartRound" }
+    s = json.dumps(j)
+    self._send_queue.put((s, rv))
+    return rv
+
 class Context(object):
-  def commands(self):
-    return self._validCommands
+  def help(self, cmd=None):
+    if cmd is None:
+      self._parser.print_help()
+    else:
+      parser = self._validCommands[cmd]
+      parser.print_help()
 
   def prompt(self):
     return self._prompt
 
-  def execute(self, cmd, args):
+  def execute(self, args):
     try:
-      cmd = self._validCommands[cmd]
-      argparse = cmd[0]
-      argspace = argparse.parse_args(args)
-      func = cmd[1]
-      return func(argspace)
-    except KeyError:
-      return "Invalid command: %s" % cmd
+      parse = self._parser.parse_args(args)
+      return parse.func(args)
+    except ParsingError:
+      return "%s is an invalid argument or command." % (" ".join(args))
 
 class RootContext(Context):
   def __init__(self, client):
     self._client = client
     self._prompt = "PyRCon"
+    self._parser = InternalParser("", add_help=False)
 
-    nextRound = argparse.ArgumentParser(prog='nextround', description="Switch server to the next round.", add_help=False)
-    info = argparse.ArgumentParser(prog='info', description="Basic Server Info.", add_help=False)
+    subparsers = self._parser.add_subparsers(title='commands')
+
+    nextRound = subparsers.add_parser('nextround', description="Switch server to the next round.", usage="nextround: Switch server to the next round.", add_help=False)
+    nextRound.set_defaults(func=self._nextRound)
+
+    restartRound = subparsers.add_parser('restartround', description="Restart current round.", add_help=False)
+    restartRound.set_defaults(func=self._restartRound)
+
+    info = subparsers.add_parser('info', description="Basic Server Info.", usage="info: Basic Server Info.", add_help=False)
+    info.set_defaults(func=self._serverInfo)
 
     self._validCommands = {
-      'info': (info, self._serverInfo),
-      'nextround': (nextRound, self._nextRound)
+      'info': info,
+      'nextround': nextRound
     }
 
   def _serverInfo(self, args):
@@ -94,10 +124,15 @@ class RootContext(Context):
     rv.get()
     return "OK"
 
+  def _restartRound(self, args):
+    rv = self._client.restartRound()
+    rv.get()
+    return "OK"
+
 def printHelp(helpDict):
   for cmd in helpDict:
     argparse = helpDict[cmd][0]
-    print argparse.format_help()
+    print argparse.format_usage().rstrip()
 
 class Console(Greenlet):
   def __init__(self,client):
@@ -118,11 +153,14 @@ class Console(Greenlet):
         args = parts[1:]
 
       if cmd == "help":
-        printHelp(currentContext.commands())
+        if len(args) > 0:
+          currentContext.help(args[0])
+        else:
+          currentContext.help()
       elif cmd == "..":
         self._contexts.pop()
       else:
-        rv = currentContext.execute(cmd, args)
+        rv = currentContext.execute(parts)
         if type(rv) == str or type(rv) == unicode:
           print rv
         elif isinstance(rv, Context):

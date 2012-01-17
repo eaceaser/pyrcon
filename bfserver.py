@@ -12,15 +12,16 @@ class BFServer(object):
     self._client = client.FBClient(self._host, self._port)
     self._client.start()
 
-  def _getServerState(self):
+  def _getVersion(self):
     assert self._client is not None
     version = commands.Version()
-    serverInfo = commands.ServerInfo()
-
     versionResponse = self._client.send(version)
-    serverInfoResponse = self._client.send(serverInfo)
-
     self._version = versionResponse.get()
+
+  def _getServerInfo(self):
+    assert self._client is not None
+    serverInfo = commands.ServerInfo()
+    serverInfoResponse = self._client.send(serverInfo)
     self._serverInfo = serverInfoResponse.get()
 
   def _login(self):
@@ -42,13 +43,20 @@ class BFServer(object):
     self._loggedIn = False
 
     self._attemptConnect()
-    self._getServerState()
+    self._getVersion()
+    self._getServerInfo()
     self._login()
 
   def info(self):
+    self._getServerInfo()
     return self._serverInfo.dict()
 
   def nextRound(self):
     cmd = commands.MapListRunNextRound()
+    rv = self._client.send(cmd)
+    return "OK"
+
+  def restartRound(self):
+    cmd = commands.MapListRestartRound()
     rv = self._client.send(cmd)
     return "OK"

@@ -9,6 +9,12 @@ Goals:
 - Be crossplatform.
 - Be lightweight and easily configurable.
 
+# Requirements
+
+- Python 2.7
+- gevent (http://www.gevent.org/)
+- PyYAML (http://pyyaml.org/)
+
 # Architecture
 
 PyRCon is designed as a service layer that provides additional functionality to clients on top of what
@@ -24,6 +30,8 @@ client, included in this project.
 - Finish pyrconc client
 - Implement event driven module API
 - Write some modules.
+- Add tests and docstrings.
+- 
 - Add a procon-compatible layer server so procon and its various tools can connect to pyrcon.
 - Remove the simple JSON protocol and replace it with a structured protobuf-driven protocol.
 - Create a web frontend for pyrcon (a separate project that speaks this new protocol.)

@@ -10,6 +10,9 @@ class FrostbiteMessage(object):
 
   filter = lambda self,p,c: p.words[0]
 
+class FrostbiteEvent(FrostbiteMessage):
+  pass
+
 class Version(FrostbiteMessage):
   words = ["version"]
   filter = lambda self,p,c: " ".join(p.words[1:])
@@ -71,6 +74,166 @@ class Login(FrostbiteMessage):
     return r.get()
 
   filter = _handleHashed
+
+# Events
+class PlayerOnAuthenticated(FrostbiteEvent):
+  def __init__(self, name):
+    self.words = [ "player.onAuthenticated" ]
+    self.words.append(name)
+    self.name = name
+
+  @staticmethod
+  def fromPacket(packet):
+    return PlayerOnAuthenticated(words[1])
+
+class PlayerOnJoin(FrostbiteEvent):
+  def __init__(self, name, guid):
+    self.words = [ "player.onJoin" ]
+    self.words.extend([name, guid])
+    self.name = name
+    self.guid = guid
+
+  @staticmethod
+  def fromPacket(packet):
+    return PlayerOnJoin(*packet.words[1:])
+
+class PlayerOnLeave(FrostbiteEvent):
+  def __init__(self, name, info):
+    self.words = [ "player.onLeave" ]
+    self.words.extend([name, info])
+    self.name = name
+    self.info = info
+
+  @staticmethod
+  def fromPacket(packet):
+    return PlayerOnLeave(*packet.words[1:])
+
+class PlayerOnSpawn(FrostbiteEvent):
+  def __init__(self, name, team):
+    self.words = [ "player.onSpawn" ]
+    self.words.extend([name, team])
+    self.name = name
+    self.team = team
+
+  @staticmethod
+  def fromPacket(packet):
+    return PlayerOnSpawn(*packet.words[1:])
+
+class PlayerOnKill(FrostbiteEvent):
+  def __init__(self, killer, killed, weapon, headshot):
+    self.words = [ "player.onKill" ]
+    self.words.extend([killer, killed, weapon, headshot])
+    self.killer = killer
+    self.killed = killed
+    self.weapon = weapon
+    self.headshot = headshot
+
+  @staticmethod
+  def fromPacket(packet):
+    return PlayerOnKill(*packet.words[1:])
+
+class PlayerOnChat(FrostbiteEvent):
+  def __init__(self, name, text):
+    self.words = [ "player.onChat" ]
+    self.words.extend([name, text])
+    self.name = name
+    self.text = text
+
+  @staticmethod
+  def fromPacket(packet):
+    return PlayerOnChat(*packet.words[1:])
+
+class PlayerOnSquadChange(FrostbiteEvent):
+  def __init__(self, name, team, squad):
+    self.words = [ "player.onSquadChange" ]
+    self.words.extend([name, team, squad])
+    self.name = name
+    self.team = team
+    self.squad = squad
+
+  @staticmethod
+  def fromPacket(packet):
+    return PlayerOnSquadChange(*packet.words[1:])
+
+class PlayerOnTeamChange(FrostbiteEvent):
+  def __init__(self, name, team, squad):
+    self.words = [ "player.onTeamChange" ]
+    self.words.extend([name, team, squad])
+    self.name = name
+    self.team = team
+    self.squad = squad
+
+  @staticmethod
+  def fromPacket(packet):
+    return PlayerOnTeamChange(*packet.words[1:])
+
+class PunkBusterOnMessage(FrostbiteEvent):
+  def __init__(self, message):
+    self.words = [ "punkBuster.onMessage" ]
+    self.words.append(message)
+    self.message = message
+
+  @staticmethod
+  def fromPacket(packet):
+    return PunkBusterOnMessage(packet.words[1])
+
+class ServerOnLevelLoaded(FrostbiteEvent):
+  def __init__(self, name, gamemode, rounds_played, rounds_total):
+    self.words = [ "server.onLevelLoaded" ]
+    self.words.extend([name, gamemode, rounds_played, rounds_total])
+    self.name = name
+    self.gamemode = gamemode
+    self.rounds_played = rounds_played
+    self.rounds_total = rounds_total
+
+  @staticmethod
+  def fromPacket(packet):
+    return ServerOnLevelLoaded(*packet.words[1:])
+
+class ServerOnRoundOver(FrostbiteEvent):
+  def __init__(self, winning_team):
+    self.words = ["server.onRoundOver"]
+    self.words.append(winning_team)
+    self.winning_team = winning_team
+
+  @staticmethod
+  def fromPacket(packet):
+    return ServerOnRoundOver(packet.words[1:])
+
+class ServerOnRoundOverTeamScores(FrostbiteEvent):
+  def __init__(self, team_scores):
+    self.words = ["server.onRoundOverTeamScores"]
+    self.words.append(team_scores)
+    self.team_scores = team_scores
+
+  @staticmethod
+  def fromPacket(packet):
+    return ServerOnRoundOverTeamScores(packet.words[1])
+
+events = {
+  u"player.onAuthenticated": PlayerOnAuthenticated.fromPacket,
+  u"player.onJoin": PlayerOnJoin.fromPacket,
+  u"player.onLeave": PlayerOnLeave.fromPacket,
+  u"player.onSpawn": PlayerOnSpawn.fromPacket,
+  u"player.onKill": PlayerOnKill.fromPacket,
+  u"player.onChat": PlayerOnChat.fromPacket,
+  u"player.onSquadChange": PlayerOnSquadChange.fromPacket,
+  u"player.onTeamChange": PlayerOnTeamChange.fromPacket,
+  u"punkBuster.onMessage": PunkBusterOnMessage.fromPacket,
+  u"server.onLevelLoaded": ServerOnLevelLoaded.fromPacket,
+  u"server.onRoundOver": ServerOnRoundOver.fromPacket,
+  u"server.ounRoundOverTeamScores": ServerOnRoundOverTeamScores.fromPacket
+}
+
+# Commands
+
+class AdminEventsEnabled(FrostbiteMessage):
+  def __init__(self, enable = True):
+    self.words = ["admin.eventsEnabled"]
+    if enable:
+      self.words.append("true")
+    else:
+      self.words.append("false")
 
 class AdminSay(FrostbiteMessage):
   def __init__(self, message):

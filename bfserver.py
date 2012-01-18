@@ -101,6 +101,12 @@ class BFServer(object):
     rv = self._client.send(cmd)
     return rv
 
+  def saveMapList(self):
+    assert self._isLoggedIn()
+    cmd = commands.MapListSave()
+    rv = self._client.send(cmd)
+    return rv
+
   def removeMap(self, index):
     assert self._isLoggedIn()
     cmd = commands.MapListRemove(index)

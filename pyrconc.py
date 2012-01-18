@@ -40,7 +40,9 @@ class SimpleJsonClient(object):
     self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     self._socket.connect(address)
     self._group.spawn(self._send_loop)
+    self._auth()
 
+  def _auth(self):
     fileobj = self._socket.makefile()
     saltmsg = json.loads(fileobj.readline().rstrip())
     salt = saltmsg["salt"]
@@ -117,6 +119,20 @@ class SimpleJsonClient(object):
     self._send_queue.put((s, rv))
     return rv
 
+  def removeMap(self, index):
+    rv = event.AsyncResult()
+    j = { "server": True, "methodName": "removeMap", "arguments": [index] }
+    s = json.dumps(j)
+    self._send_queue.put((s, rv))
+    return rv
+
+  def saveMaps(self):
+    rv = event.AsyncResult()
+    j = { "server": True, "methodName": "saveMapList" }
+    s = json.dumps(j)
+    self._send_queue.put((s, rv))
+    return rv
+
   def knownMaps(self):
     rv = event.AsyncResult()
     j = { "server": False, "methodName": "knownMaps" }
@@ -156,7 +172,7 @@ class Context(object):
   def help(self, cmd=None):
     if cmd is None:
       for i in self._parsers:
-        self._parsers[i].print_help()
+        self._parsers[i].print_usage()
     else:
       parser = self._parsers[cmd]
       parser.print_help()
@@ -269,12 +285,16 @@ class MapsContext(Context):
 
     remove = InternalParser("remove", add_help=False)
     remove.set_defaults(fun=self._remove)
-    remove.add_argument("position")
+    remove.add_argument("position", type=int)
 
     setnext = InternalParser("setnext", add_help=False)
     setnext.set_defaults(func=self._setnext)
     setnext.add_argument("position", type=int)
-    self._parsers = {'list': maplist, 'add': add, 'setnext': setnext, 'clear': clear, 'remove': remove}
+
+    save = InternalParser("save", add_help=False)
+    save.set_defaults(func=self._save)
+
+    self._parsers = {'list': maplist, 'add': add, 'setnext': setnext, 'clear': clear, 'remove': remove, 'save': save}
 
   def _maplist(self, args):
     rv = self._client.listMaps()
@@ -305,6 +325,14 @@ class MapsContext(Context):
 
   def _setnext(self, args):
     rv = self._client.setNextMap(args.position-1)
+    return rv.get()
+
+  def _remove(self, args):
+    rv = self._client.removeMap(args.position-1)
+    return rv.get()
+
+  def _save(self, args):
+    rv = self._client.saveMaps()
     return rv.get()
 
 class PlayerContext(Context):

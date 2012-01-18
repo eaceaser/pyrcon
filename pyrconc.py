@@ -109,6 +109,34 @@ class SimpleJsonClient(object):
     self._send_queue.put((s, rv))
     return rv
 
+  def setNextMap(self, position):
+    rv = event.AsyncResult()
+    j = { "server": True, "methodName": "setNextMap", "arguments": [position] }
+    s = json.dumps(j)
+    self._send_queue.put((s, rv))
+    return rv
+
+  def clearMaps(self):
+    rv = event.AsyncResult()
+    j = { "server": True, "methodName": "clearMapList" }
+    s = json.dumps(j)
+    self._send_queue.put((s, rv))
+    return rv
+
+  def listPlayers(self):
+    rv = event.AsyncResult()
+    j = { "server": True, "methodName": "listPlayers" }
+    s = json.dumps(j)
+    self._send_queue.put((s, rv))
+    return rv
+
+  def teams(self):
+    rv = event.AsyncResult()
+    j = { "server": False, "methodName": "listTeams" }
+    s = json.dumps(j)
+    self._send_queue.put((s, rv))
+    return rv
+
 class Context(object):
   def help(self, cmd=None):
     if cmd is None:
@@ -150,15 +178,23 @@ class RootContext(Context):
     maps = InternalParser('maps', description="BF3 Server Map List Context", add_help=False)
     maps.set_defaults(func=self._maps)
 
+    player = InternalParser('player', description="Player List Context", add_help=False)
+    player.set_defaults(func=self._player)
+
     knownmaps = InternalParser('knownmaps', description="Known Maps.", add_help=False)
     knownmaps.set_defaults(func=self._knownMaps)
+
+    teams = InternalParser('teams', description="Current Teams.", add_help=False)
+    teams.set_defaults(func=self._teams)
 
     self._parsers = {
       'info': info,
       'nextround': nextRound,
       'version': version,
       'maps': maps,
-      'knownmaps': knownmaps
+      'player': player,
+      'knownmaps': knownmaps,
+      'teams': teams
     }
 
   def _serverInfo(self, args):
@@ -183,10 +219,20 @@ class RootContext(Context):
     context = MapsContext(client)
     return context
 
+  def _player(self, args):
+    context = PlayerContext(client)
+    return context
+
   def _knownMaps(self, args):
     rv = self._client.knownMaps()
     d = rv.get()
     s = ["%s (%s): %s" % (d[m]["name"], m, " ".join(d[m]["modes"])) for m in d]
+    return "\n".join(s)
+
+  def _teams(self, args):
+    rv = self._client.teams()
+    d = rv.get()
+    s = ["%s. %s" % (k, d[k]) for k in sorted(d.keys())]
     return "\n".join(s)
 
 class MapsContext(Context):
@@ -197,13 +243,23 @@ class MapsContext(Context):
     maplist = InternalParser("list", add_help=False)
     maplist.set_defaults(func=self._maplist)
 
+    clear = InternalParser("clear", add_help=False)
+    clear.set_defaults(func=self._clear)
+
     add = InternalParser("add", add_help=False)
     add.set_defaults(func=self._add)
     add.add_argument("name")
     add.add_argument("gamemode")
     add.add_argument("rounds")
 
-    self._parsers = {'list': maplist, 'add': add }
+    remove = InternalParser("remove", add_help=False)
+    remove.set_defaults(fun=self._remove)
+    remove.add_argument("position")
+
+    setnext = InternalParser("setnext", add_help=False)
+    setnext.set_defaults(func=self._setnext)
+    setnext.add_argument("position", type=int)
+    self._parsers = {'list': maplist, 'add': add, 'setnext': setnext, 'clear': clear, 'remove': remove}
 
   def _maplist(self, args):
     rv = self._client.listMaps()
@@ -226,6 +282,28 @@ class MapsContext(Context):
 
   def _add(self, args):
     rv = self._client.addMap(args.name, args.gamemode, args.rounds)
+    return rv.get()
+
+  def _clear(self, args):
+    rv = self._client.clearMaps()
+    return rv.get()
+
+  def _setnext(self, args):
+    rv = self._client.setNextMap(args.position-1)
+    return rv.get()
+
+class PlayerContext(Context):
+  _prompt = "player"
+  def __init__(self, client):
+    self._client = client
+
+    list = InternalParser("list", add_help=False)
+    list.set_defaults(func=self._list)
+
+    self._parsers = {'list': list }
+
+  def _list(self, args):
+    rv = self._client.listPlayers()
     return rv.get()
 
 class Console(Greenlet):

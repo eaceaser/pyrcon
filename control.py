@@ -1,3 +1,4 @@
+import gevent
 from gevent import event
 
 class Control(object):
@@ -13,4 +14,10 @@ class Control(object):
     rv = event.AsyncResult()
     data = self._mapData
     rv.set(data)
+    return rv
+
+  def listTeams(self):
+    rv = event.AsyncResult()
+    infoRv = self._server.info()
+    gevent.spawn(lambda i: self._modeData[i.get()["gameMode"]]["teams"], infoRv).link(rv)
     return rv

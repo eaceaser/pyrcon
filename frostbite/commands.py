@@ -218,7 +218,7 @@ class MapListAdd(FrostbiteMessage):
 class MapListRemove(FrostbiteMessage):
   def __init__(self, index):
     self.words = ["mapList.remove"]
-    self.words.append(index)
+    self.words.append(str(index))
 
 class MapListClear(FrostbiteMessage):
   def __init__(self):
@@ -248,7 +248,7 @@ class MapListList(FrostbiteMessage):
 class MapListSetNextMapIndex(FrostbiteMessage):
   def __init__(self, index):
     self.words = ["mapList.setNextMapIndex"]
-    self.words.append(index)
+    self.words.append(str(index))
 
 class MapListGetMapIndices(FrostbiteMessage):
   def __init__(self):

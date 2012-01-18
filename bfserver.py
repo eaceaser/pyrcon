@@ -75,7 +75,7 @@ class BFServer(object):
     cmd = commands.MapListList()
     innerrv = self._client.send(cmd)
     rv = event.AsyncResult()
-    gevent.spawn(lambda: map(lambda i: [i.name, i.gamemode, i.rounds], innerrv.get())).link(rv)
+    gevent.spawn(lambda r: map(lambda i: [i.name, i.gamemode, i.rounds], r.get()), innerrv).link(rv)
     return rv
 
   def getMapIndices(self):
@@ -87,4 +87,30 @@ class BFServer(object):
     assert self._isLoggedIn()
     cmd = commands.MapListAdd(name, gamemode, rounds)
     rv = self._client.send(cmd)
+    return rv
+
+  def setNextMap(self, index):
+    assert self._isLoggedIn()
+    cmd = commands.MapListSetNextMapIndex(index)
+    rv = self._client.send(cmd)
+    return rv
+
+  def clearMapList(self):
+    assert self._isLoggedIn()
+    cmd = commands.MapListClear()
+    rv = self._client.send(cmd)
+    return rv
+
+  def removeMap(self, index):
+    assert self._isLoggedIn()
+    cmd = commands.MapListRemove(index)
+    rv = self._client.send(cmd)
+    return rv
+
+  def listPlayers(self):
+    assert self._isLoggedIn()
+    cmd = commands.AdminListAllPlayers()
+    innerrv = self._client.send(cmd)
+    rv = event.AsyncResult()
+    gevent.spawn(lambda r: map(lambda p: [p.name], r.get()), innerrv).link(rv)
     return rv

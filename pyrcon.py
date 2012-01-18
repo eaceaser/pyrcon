@@ -48,6 +48,6 @@ modeFile.close()
 
 serverConfig = config['rcon']
 server = BFServer(serverConfig["host"], serverConfig["port"], serverConfig["password"])
-control = Control(server, mapData, modeData)
+control = Control(server, config["server"]["password"], mapData, modeData)
 
 simple.simpleServer(control)

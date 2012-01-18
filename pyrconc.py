@@ -4,6 +4,8 @@ import os
 import readline
 import argparse
 import json
+import hashlib
+import binascii
 
 import gevent.pool
 import gevent.hub
@@ -24,10 +26,11 @@ class InternalParser(argparse.ArgumentParser):
       file.write(message)
 
 class SimpleJsonClient(object):
-  def __init__(self, hostname, port):
+  def __init__(self, hostname, port, password):
     self._socket = None
     self._hostname = hostname
     self._port = port
+    self._password = password
     self._send_queue = gevent.queue.Queue()
     self._read_queue = gevent.queue.Queue()
     self._group = gevent.pool.Group()
@@ -37,6 +40,18 @@ class SimpleJsonClient(object):
     self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     self._socket.connect(address)
     self._group.spawn(self._send_loop)
+
+    fileobj = self._socket.makefile()
+    saltmsg = json.loads(fileobj.readline().rstrip())
+    salt = saltmsg["salt"]
+    md5 = hashlib.md5()
+    md5.update(binascii.unhexlify(salt))
+    md5.update(self._password)
+    rv = md5.hexdigest()
+    resp = {"secret": rv}
+    fileobj.write(json.dumps(resp))
+    fileobj.write("\n")
+    fileobj.flush()
 
   def _send_loop(self):
     fileobj = self._socket.makefile()
@@ -341,9 +356,10 @@ class Console(Greenlet):
 parser = argparse.ArgumentParser(description='Command line client for PyRCon.')
 parser.add_argument('--host', '-H', dest='host', help='PyRCon Hostname', default="localhost")
 parser.add_argument('--port', '-p', dest='port', help='PyRCon Port', type=int, default=31337)
+parser.add_argument('--password', '-P', dest='password', help='Server Password', required=True)
 args = parser.parse_args()
 
-client = SimpleJsonClient(args.host, args.port)
+client = SimpleJsonClient(args.host, args.port, args.password)
 client.start()
 g = Console(client)
 g.start()

@@ -12,7 +12,27 @@ class SimpleJsonServer:
 
   def run(self):
     logger.info("Simple server started.")
+    # Auth
     fileobj = self._socket.makefile()
+    salt = self._control.getSalt()
+    msg = { 'salt': salt }
+
+    fileobj.write(json.dumps(msg))
+    fileobj.write("\n")
+    fileobj.flush()
+
+    auth = fileobj.readline().rstrip()
+    pw = json.loads(auth)['secret']
+
+    if not self._control.auth(salt, pw):
+      msg = { 'go away': True }
+      fileobj.write(json.dumps(msg))
+      fileobj.write("\n")
+      fileobj.flush()
+      fileobj.close()
+      self._socket.close()
+      return
+
     while True:
       line = fileobj.readline().rstrip()
       logger.debug("Received line: %s" % line)

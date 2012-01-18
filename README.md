@@ -31,9 +31,9 @@ client, included in this project.
 - Implement event driven module API
 - Write some modules.
 - Add tests and docstrings.
-- 
 - Add a procon-compatible layer server so procon and its various tools can connect to pyrcon.
 - Remove the simple JSON protocol and replace it with a structured protobuf-driven protocol.
+- Refactor server and client to reduce boilerplate.
 - Create a web frontend for pyrcon (a separate project that speaks this new protocol.)
 - Add multi-user authentication.
 - Add SSL cert based authentication.

@@ -40,6 +40,12 @@ class SimpleJsonServer:
 
     while True:
       line = fileobj.readline().rstrip()
+      if line is None or line == "":
+        logger.debug("Socket went away. Connection closed.")
+        fileobj.close()
+        self._socket.close()
+        return
+
       logger.debug("Received line: %s" % line)
       try:
         j = json.loads(line)
@@ -63,9 +69,11 @@ class SimpleJsonServer:
         logger.debug("Sending response: %s" % json.dumps(response))
         fileobj.write(responseStr)
         fileobj.write("\n")
+        fileobj.flush()
       except ValueError:
-        self._socket.send("blah!\n")
-      fileobj.flush()
+        logger.debug("Illegal command received. Throwing connection away.")
+        fileobj.close()
+        self._socket.close()
 
 def simpleServer(control):
   handler = lambda socket, address: SimpleJsonServer(socket, address, control).run()

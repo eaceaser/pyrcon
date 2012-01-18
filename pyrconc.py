@@ -35,10 +35,13 @@ class SimpleJsonClient(object):
     self._read_queue = gevent.queue.Queue()
     self._group = gevent.pool.Group()
 
-  def start(self):
-    address = (socket.gethostbyname(self._hostname), self._port)
+  def _connect(self):
     self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    address = (socket.gethostbyname(self._hostname), self._port)
     self._socket.connect(address)
+
+  def start(self):
+    self._connect()
     self._group.spawn(self._send_loop)
     self._auth()
 
@@ -66,6 +69,16 @@ class SimpleJsonClient(object):
       fileobj.flush()
       # wait for a response.
       response = fileobj.readline().rstrip()
+
+      if response == None or response == "":
+        print "Connection lost. Reconnecting."
+        self._socket = None
+        self._connect()
+        self._auth()
+        fileobj = self._socket.makefile()
+        rv.set("")
+        continue
+
       jsonResponse = json.loads(response)
       rv.set(jsonResponse["response"])
 

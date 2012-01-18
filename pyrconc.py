@@ -6,6 +6,7 @@ import argparse
 import json
 import hashlib
 import binascii
+import atexit
 
 import gevent.pool
 import gevent.hub
@@ -402,6 +403,12 @@ args = parser.parse_args()
 
 client = SimpleJsonClient(args.host, args.port, args.password)
 client.start()
+histfile = os.path.join(os.path.expanduser("~"), ".pyrconchist")
+try:
+  readline.read_history_file(histfile)
+except IOError:
+  pass
+atexit.register(readline.write_history_file, histfile)
 g = Console(client)
 g.start()
 g.join()

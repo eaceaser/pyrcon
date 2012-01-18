@@ -182,6 +182,31 @@ class SimpleJsonClient(object):
     self._send_queue.put((s, rv))
     return rv
 
+  def kickPlayer(self, player, reason=None):
+    rv = event.AsyncResult()
+    j = { "server": True, "methodName": "kickPlayer" }
+    args = [ player ]
+    if reason is not None:
+      args.append(reason)
+    j["arguments"] = args
+    s = json.dumps(j)
+    self._send_queue.put((s, rv))
+    return rv
+
+  def killPlayer(self, player):
+    rv = event.AsyncResult()
+    j = { "server": True, "methodName": killPlayer, "arguments": [ player ] }
+    s = json.dumps(j)
+    self._send_queue.put((s, rv))
+    return rv
+
+  def listBans(self):
+    rv = event.AsyncResult()
+    j = { "server": True, "methodName": "listBans" }
+    s = json.dumps(j)
+    self._send_queue.put((s, rv))
+    return rv
+
 class Context(object):
   def help(self, cmd=None):
     if cmd is None:
@@ -232,12 +257,16 @@ class RootContext(Context):
     teams = InternalParser('teams', description="Current Teams.", add_help=False)
     teams.set_defaults(func=self._teams)
 
+    ban = InternalParser('ban', description="Ban List Context", add_help=False)
+    ban.set_defaults(func=self._ban)
+
     self._parsers = {
       'info': info,
       'nextround': nextRound,
       'version': version,
       'maps': maps,
       'player': player,
+      'ban': ban,
       'knownmaps': knownmaps,
       'teams': teams
     }
@@ -266,6 +295,10 @@ class RootContext(Context):
 
   def _player(self, args):
     context = PlayerContext(client)
+    return context
+
+  def _ban(self, args):
+    context = BanContext(client)
     return context
 
   def _knownMaps(self, args):
@@ -308,7 +341,14 @@ class MapsContext(Context):
     save = InternalParser("save", add_help=False)
     save.set_defaults(func=self._save)
 
-    self._parsers = {'list': maplist, 'add': add, 'setnext': setnext, 'clear': clear, 'remove': remove, 'save': save}
+    self._parsers = {
+      'list': maplist,
+      'add': add,
+      'setnext': setnext,
+      'clear': clear,
+      'remove': remove,
+      'save': save
+     }
 
   def _maplist(self, args):
     rv = self._client.listMaps()
@@ -357,11 +397,51 @@ class PlayerContext(Context):
     list = InternalParser("list", add_help=False)
     list.set_defaults(func=self._list)
 
-    self._parsers = {'list': list }
+    kick = InternalParser("kick", add_help=False)
+    kick.set_defaults(func=self._kick)
+    kick.add_argument("player")
+    kick.add_argument("-r", "--reason", required=False)
+
+    kill = InternalParser("kill", add_help=False)
+    kill.set_defaults(func=self._kill)
+    kill.add_argument("player")
+
+    self._parsers = {
+      'list': list,
+      'kick': kick,
+      'kill': kill
+    }
 
   def _list(self, args):
     rv = self._client.listPlayers()
     return rv.get()
+
+  def _kick(self, args):
+    rv = self._client.kickPlayer(args.player, args.reason)
+    return rv.get()
+
+  def _kill(self, args):
+    rv = self._client.killPlayer(args.player)
+    return rv.get()
+
+class BanContext(Context):
+  _prompt = "ban"
+
+  def __init__(self, client):
+    self._client = client
+
+    list = InternalParser("list", add_help=False)
+    list.set_defaults(func = self._list)
+
+    self._parsers = {
+      'list': list
+    }
+
+  def _list(self, args):
+    rv = self._client.listBans()
+    bans = rv.get()
+    formatted = ["%s (%s) - %s (%s) - %s" % (b[0], b[1], b[2], b[3], b[4]) for b in bans]
+    return "\n".join(formatted)
 
 class Console(Greenlet):
   def __init__(self,client):

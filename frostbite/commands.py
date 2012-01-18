@@ -183,20 +183,20 @@ class BanListList(FrostbiteMessage):
     if offset is not None: self.words.append(offset)
 
   def _parseBanList(self, packet, client):
-    num = int(packet.words[1])
-    pos = 2
     bans = []
-    for i in range(num):
-      banslice = packet.words[pos:pos+5]
-      ban = Ban()
-      ban["idType"] = banslice[0]
-      ban["id"] = banslice[1]
-      ban["banType"] = banslice[2]
-      ban["time"] = banslice[3]
-      ban["reason"] = banslice[4]
-      bans.append(ban)
-      pos = pos+5
-
+    if len(packet.words) > 1:
+      num = int(packet.words[1])
+      pos = 2
+      for i in range(num):
+        banslice = packet.words[pos:pos+5]
+        ban = Ban()
+        ban.idType = banslice[0]
+        ban.id = banslice[1]
+        ban.banType = banslice[2]
+        ban.time = banslice[3]
+        ban.reason = banslice[4]
+        bans.append(ban)
+        pos = pos+5
     return bans
 
   filter = _parseBanList

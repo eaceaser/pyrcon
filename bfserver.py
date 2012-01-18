@@ -120,3 +120,23 @@ class BFServer(object):
     rv = event.AsyncResult()
     gevent.spawn(lambda r: map(lambda p: [p.name], r.get()), innerrv).link(rv)
     return rv
+
+  def kickPlayer(self, playerName, reason=None):
+    assert self._isLoggedIn()
+    cmd = commands.AdminKickPlayer(playerName, reason)
+    rv = self._client.send(cmd)
+    return rv
+
+  def killPlayer(self, playerName):
+    assert self._isLoggedIn()
+    cmd = commands.AdminKillPlayer(playerName)
+    rv = self._client.send(cmd)
+    return rv
+
+  def listBans(self):
+    assert self._isLoggedIn()
+    cmd = commands.BanListList()
+    struct_rv = self._client.send(cmd)
+    rv = event.AsyncResult()
+    gevent.spawn(lambda r: [[b.id, b.idType, b.banType, b.time, b.reason] for b in r.get()], struct_rv).link(rv)
+    return rv

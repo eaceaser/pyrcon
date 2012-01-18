@@ -17,14 +17,19 @@ class SimpleJsonServer:
     salt = self._control.getSalt()
     msg = { 'salt': salt }
 
-    fileobj.write(json.dumps(msg))
+    m = json.dumps(msg)
+    logger.debug("Writing auth packet: %s" % m)
+    fileobj.write(m)
     fileobj.write("\n")
     fileobj.flush()
 
+    logger.debug("Waiting for auth response.")
     auth = fileobj.readline().rstrip()
     pw = json.loads(auth)['secret']
+    logger.debug("Received secret: %s" % pw)
 
     if not self._control.auth(salt, pw):
+      logger.debug("Authentication failed. Closing connection.")
       msg = { 'go away': True }
       fileobj.write(json.dumps(msg))
       fileobj.write("\n")

@@ -32,14 +32,9 @@ class Control(object):
     return binascii.hexlify(salt)
 
   def auth(self, salt, crypt):
-    m = hashlib.md5()
-    m.update(salt)
-    m.update(crypt)
-    test = m.digest()
-
     g = hashlib.md5()
     g.update(salt)
     g.update(self._password)
-    golden = m.digest()
+    golden = g.hexdigest()
 
-    return golden == test
+    return golden == crypt

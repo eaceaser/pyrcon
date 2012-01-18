@@ -29,3 +29,7 @@ client, included in this project.
 - Create a web frontend for pyrcon (a separate project that speaks this new protocol.)
 - Add multi-user authentication.
 - Add SSL cert based authentication.
+
+# Authors
+
+Edward Ceaser <eac@tehasdf.com>

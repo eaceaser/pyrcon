@@ -7,6 +7,7 @@ server:
   password: SOMEPASS
 
 modules:
-  - timedchat:
+  timedchat:
     - interval: 60
-    - text: This is a test message!
+      text: This is a test message!
+      delay: 0

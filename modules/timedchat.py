@@ -10,9 +10,14 @@ class TimedChat(EventHandler):
     for message in config:
       interval = message["interval"]
       text = message["text"]
-      gevent.spawn(self._say_on_interval, interval, text)
+      delay = message.get("delay", 0)
 
-  def _say_on_interval(self, interval, text):
+      gevent.spawn(self._say_on_interval, interval, delay, text)
+
+  def _say_on_interval(self, interval, delay, text):
+    if delay > 0:
+      gevent.sleep(delay)
+
     while True:
       self._control.server().say_all(text)
       gevent.sleep(interval)

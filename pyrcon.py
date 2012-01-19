@@ -32,26 +32,27 @@ logging.basicConfig(level=level)
 
 logger = logging.getLogger("")
 logger.info("Loading config file.")
-configFile = io.open(args.config, 'r')
-config = load(configFile, Loader=Loader)
-configFile.close()
+config_file = io.open(args.config, 'r')
+config = load(config_file, Loader=Loader)
+config_file.close()
 
 logger.info("Loading maps data.")
-mapsFile = io.open(args.mapfile, 'r')
-mapData = load(mapsFile, Loader=Loader)
-mapsFile.close()
+maps_file = io.open(args.mapfile, 'r')
+map_data = load(maps_file, Loader=Loader)
+maps_file.close()
 
 logger.info("Loading mode data.")
-modeFile = io.open(args.modefile, 'r')
-modeData = load(modeFile, Loader=Loader)
-modeFile.close()
+mode_file = io.open(args.modefile, 'r')
+mode_data = load(mode_file, Loader=Loader)
+mode_file.close()
 
-serverConfig = config['rcon']
-server = BFServer(serverConfig["host"], serverConfig["port"], serverConfig["password"])
-control = Control(server, config["server"]["password"], mapData, modeData)
+server_config = config['rcon']
+server = BFServer(server_config["host"], server_config["port"], server_config["password"])
+control = Control(server, config["server"]["password"], map_data, mode_data)
 
 modules_config = config['modules']
 for module_name in modules_config:
+  logger.info("Loading module: %s" % module_name)
   module_config = modules_config[module_name]
   i = __import__("modules.%s" % module_name, globals(), locals(), ['module'], -1)
   i.module(control, module_config)

@@ -190,3 +190,9 @@ class BFServer(object):
     rv = event.AsyncResult()
     gevent.spawn(lambda r: [[b.id, b.idType, b.banType, b.time, b.reason] for b in r.get()], struct_rv).link(rv)
     return rv
+
+  def say_all(self, msg):
+    assert self._isLoggedIn()
+    cmd = commands.AdminSay(msg)
+    rv = self._client.send(cmd)
+    return rv

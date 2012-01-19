@@ -5,3 +5,8 @@ rcon:
 
 server:
   password: SOMEPASS
+
+modules:
+  - timedchat:
+    - interval: 60
+    - text: This is a test message!

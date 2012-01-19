@@ -1,4 +1,6 @@
-class EventHandler(object):
+from module import Module
+
+class EventHandler(Module):
   def on_player_authenticated(self, name):
     pass
 

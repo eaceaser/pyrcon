@@ -50,4 +50,10 @@ serverConfig = config['rcon']
 server = BFServer(serverConfig["host"], serverConfig["port"], serverConfig["password"])
 control = Control(server, config["server"]["password"], mapData, modeData)
 
+modules_config = config['modules']
+for module_name in modules_config:
+  module_config = modules_config[module_name]
+  i = __import__("modules.%s" % module_name, globals(), locals(), ['module'], -1)
+  i.module(control, module_config)
+
 simple.simpleServer(control)

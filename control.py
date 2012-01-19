@@ -12,6 +12,9 @@ class Control(object):
     self._modeData = modeData
     self._password = password
 
+  def server(self):
+    return self._server
+
   def getServer(self):
     return self._server
 

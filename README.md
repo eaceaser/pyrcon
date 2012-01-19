@@ -28,7 +28,6 @@ client, included in this project.
 # TODO
 
 - Finish pyrconc client
-- Implement event driven module API
 - Write some modules.
 - Add tests and docstrings.
 - Use @properties.

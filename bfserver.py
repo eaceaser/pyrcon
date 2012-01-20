@@ -167,9 +167,9 @@ class BFServer(object):
     assert self._isLoggedIn()
     cmd = commands.AdminListAllPlayers()
     innerrv = self._client.send(cmd)
-    rv = event.AsyncResult()
-    gevent.spawn(lambda r: map(lambda p: [p.name], r.get()), innerrv).link(rv)
-    return rv
+#    rv = event.AsyncResult()
+#    gevent.spawn(lambda r: map(lambda p: [p.name], r.get()), innerrv).link(rv)
+    return innerrv
 
   def kickPlayer(self, playerName, reason=None):
     assert self._isLoggedIn()

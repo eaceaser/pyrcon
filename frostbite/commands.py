@@ -1,6 +1,6 @@
 from frostbite.packet import Packet
 
-from frostbite.serverstructs import ServerState, Map, Player, Ban
+from frostbite.serverstructs import ServerState, Map, PlayerCollection, Ban
 
 import binascii
 import hashlib
@@ -279,19 +279,7 @@ class AdminSayPlayer(FrostbiteMessage):
 
 class AdminListPlayers(FrostbiteMessage):
   def _handlePlayerList(self, packet, client):
-    numParams = int(packet.words[1])
-    fieldNames = packet.words[2:2+numParams]
-    numPlayers = int(packet.words[2+numParams])
-    base = 2+numParams+1
-    players = []
-    for i in range(numPlayers):
-      playerFields = packet.words[base:base+numParams]
-      base = base + numParams
-      player = Player()
-      for idx,val in enumerate(playerFields):
-        player[fieldNames[idx]] = val
-      players.append(player)
-    return players
+    return PlayerCollection.from_packet_array(packet.words[1:])
   filter = _handlePlayerList
 
   @staticmethod

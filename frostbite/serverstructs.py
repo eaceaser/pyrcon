@@ -137,18 +137,43 @@ class ServerState(object):
                        joinAddress, punkbusterVersion, joinQueueEnabled, region,
                        pingSite, country)
 
-class Player(object):
+class PlayerCollection(object):
+  def __init__(self, names, players):
+    self._names = names
+    self._players = players
+
+  def __delitem__(self, key):
+    self._players.__delitem__(key)
+
+  def __getitem__(self, item):
+    return self._players.__getitem__(item)
+
+  def __setitem__(self, key, value):
+    self._players.__setitem__(key, value)
+
+  def get_field_names(self):
+    return self._names
+
+  def to_packet_array(self):
+    rv = [str(len(self._names))]
+    rv.extend(self._names)
+    rv.append(str(len(self._players)))
+    for player in self._players:
+      rv.extend(player)
+    return rv
+
   @staticmethod
   def from_packet_array(a):
     num_names = int(a[0])
-    names = a[1:1+num_names]
+    field_names = a[1:1+num_names]
     num_players = int(a[1+num_names])
-
-    base = 1+num_names+1
     players = []
-    for i in range(num_players)
+    base = 1+num_names+1
+    for i in range(num_players):
+      player_base = base + i * num_names
+      players.append(a[player_base:player_base+num_names])
 
-
+    return PlayerCollection(field_names, players)
 
 class Ban(OpenStruct):
   pass

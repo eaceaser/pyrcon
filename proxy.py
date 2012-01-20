@@ -32,7 +32,9 @@ class Proxy(object):
       arr = ServerState.from_dict(info)
       server.send(seq, frostbite.commands.ResponsePacket("OK", *arr.to_packet_array()))
     elif isinstance(command, frostbite.commands.AdminListAllPlayers):
-      pass
+      players = self._client.listPlayers().get()
+      pa = players.to_packet_array()
+      server.send(seq, frostbite.commands.ResponsePacket("OK", *pa))
     else:
       server.send(seq, frostbite.commands.ResponsePacket("OK"))
 

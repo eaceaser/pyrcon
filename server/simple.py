@@ -10,6 +10,7 @@ class SimpleJsonServer:
     self._socket = socket
     self._control = control
 
+  #TODO: Switch from run to start
   def run(self):
     logger.info("Simple server started.")
     # Auth
@@ -78,4 +79,4 @@ class SimpleJsonServer:
 def simpleServer(control):
   handler = lambda socket, address: SimpleJsonServer(socket, address, control).run()
   server = StreamServer(('0.0.0.0', 31337), handler)
-  server.serve_forever()
+  server.start()

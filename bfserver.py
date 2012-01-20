@@ -40,7 +40,7 @@ class BFServer(object):
     self._client = client.FBClient(self._host, self._port, self._dispatch_event)
     self._client.start()
 
-  def _dispatch_event(self, command):
+  def _dispatch_event(self, client, command):
     if isinstance(command, commands.PlayerOnAuthenticated):
       for handler in self._handlers:
         gevent.spawn(lambda h,c: h.on_player_authenticated(c.name), handler, command)
@@ -101,9 +101,9 @@ class BFServer(object):
   def info(self):
     assert self._client is not None
     serverInfo = commands.ServerInfo()
-    innerrv = self._client.send(serverInfo)
+    inner_rv = self._client.send(serverInfo)
     rv = event.AsyncResult()
-    gevent.spawn(lambda: innerrv.get().dict()).link(rv)
+    gevent.spawn(lambda: inner_rv.get().to_dict()).link(rv)
     return rv
 
   def version(self):
@@ -123,9 +123,9 @@ class BFServer(object):
   def listMaps(self):
     assert self._isLoggedIn()
     cmd = commands.MapListList()
-    innerrv = self._client.send(cmd)
+    inner_rv = self._client.send(cmd)
     rv = event.AsyncResult()
-    gevent.spawn(lambda r: map(lambda i: [i.name, i.gamemode, i.rounds], r.get()), innerrv).link(rv)
+    gevent.spawn(lambda r: map(lambda i: [i.name, i.gamemode, i.rounds], r.get()), inner_rv).link(rv)
     return rv
 
   def getMapIndices(self):

@@ -9,6 +9,9 @@ from bfserver import BFServer
 from gevent import backdoor
 from server import simple
 from control import Control
+from proxy import Proxy
+
+import gevent
 
 try:
   from yaml import CLoader as Loader, CDumper as Dumper
@@ -51,10 +54,15 @@ server = BFServer(server_config["host"], server_config["port"], server_config["p
 control = Control(server, config["server"]["password"], map_data, mode_data)
 
 modules_config = config['modules']
-for module_name in modules_config:
-  logger.info("Loading module: %s" % module_name)
-  module_config = modules_config[module_name]
-  i = __import__("modules.%s" % module_name, globals(), locals(), ['module'], -1)
-  i.module(control, module_config)
+if modules_config is not None:
+  for module_name in modules_config:
+    logger.info("Loading module: %s" % module_name)
+    module_config = modules_config[module_name]
+    i = __import__("modules.%s" % module_name, globals(), locals(), ['module'], -1)
+    i.module(control, module_config)
 
 simple.simpleServer(control)
+proxy = Proxy(server)
+
+while True:
+  gevent.sleep(100)

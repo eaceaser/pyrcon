@@ -19,7 +19,7 @@ class TimedChat(EventHandler):
       gevent.sleep(delay)
 
     while True:
-      self._control.server().say_all(text)
+      self._control.server.say_all(text)
       gevent.sleep(interval)
 
 module = TimedChat

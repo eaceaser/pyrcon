@@ -40,7 +40,7 @@ class BFServer(object):
     self._client = client.FBClient(self._host, self._port, self._dispatch_event)
     self._client.start()
 
-  def _dispatch_event(self, client, command):
+  def _dispatch_event(self, client, seq, command):
     if isinstance(command, commands.PlayerOnAuthenticated):
       for handler in self._handlers:
         gevent.spawn(lambda h,c: h.on_player_authenticated(c.name), handler, command)

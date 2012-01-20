@@ -10,7 +10,9 @@ class FBServer(FBBase):
 
   def start(self):
     logger.info("Frostbite Server Started.")
+    self.sent_salt = None
     self._start_processors()
+    return self
 
   def send(self, seq, command):
     response = AsyncResult()

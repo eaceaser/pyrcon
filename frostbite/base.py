@@ -36,12 +36,28 @@ class FBBase(object):
     while True:
       packet = self._send_queue.get()
       logger.debug("Writing packet inflight: %s %s" % (packet.seqNumber, packet.words))
-      self._socket.sendall(packet.encode())
+      try:
+        self._socket.sendall(packet.encode())
+      except Exception:
+        logger.info("Connection closed.")
+        self._group.kill()
+        return
 
   def _read_loop(self):
     buf = ''
     while True:
-      data = self._socket.recv(512)
+      try:
+        data = self._socket.recv(512)
+      except Exception:
+        logger.info("Connection closed.")
+        self._group.kill()
+        return
+
+      if data is None:
+        logger.info("Empty data, no more connection.")
+        self._group.kill()
+        return
+
       buf += data
       while len(buf) > Packet.processSize:
         packet, buf = Packet.decode(buf)

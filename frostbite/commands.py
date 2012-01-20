@@ -49,6 +49,7 @@ class LoginSecret(FrostbiteMessage):
   def __init__(self, secret):
     self.words = ["login.hashed"]
     self.words.append(secret)
+    self.secret = secret
 
 class Login(FrostbiteMessage):
   def __init__(self, password):

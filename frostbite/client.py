@@ -22,6 +22,7 @@ class FBClient(FBBase):
     self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     self._socket.connect(address)
     self._start_processors()
+    return self
 
   def send(self, command):
     response = AsyncResult()

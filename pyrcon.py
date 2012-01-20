@@ -62,7 +62,7 @@ if modules_config is not None:
     i.module(control, module_config)
 
 simple.simpleServer(control)
-proxy = Proxy(server)
+proxy = Proxy(control)
 
 while True:
   gevent.sleep(100)

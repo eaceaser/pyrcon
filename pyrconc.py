@@ -51,10 +51,10 @@ class SimpleJsonClient(object):
     saltmsg = json.loads(fileobj.readline().rstrip())
     salt = saltmsg["salt"]
     md5 = hashlib.md5()
-    md5.update(salt)
-    md5.update(self._password)
+    md5.update(salt.decode("hex"))
+    md5.update(self._password.encode("ascii"))
     rv = md5.hexdigest()
-    resp = {"secret": rv}
+    resp = {"secret": rv.upper()}
     fileobj.write(json.dumps(resp))
     fileobj.write("\n")
     fileobj.flush()

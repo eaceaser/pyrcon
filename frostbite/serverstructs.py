@@ -116,8 +116,8 @@ class ServerState(object):
     numTeams = int(a[7])
     teamScores = []
     for i in range(numTeams):
-      teamScores.append(int(a[7+i+1]))
-    targetScores = int(a[7+numTeams+1])
+      teamScores.append(int(float(a[7+i+1])))
+    targetScores = int(float(a[7+numTeams+1]))
     onlineState = a[7+numTeams+2]
     isRanked = a[7+numTeams+3]
     hasPunkbuster = a[7+numTeams+4]

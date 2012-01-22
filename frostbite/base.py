@@ -40,7 +40,8 @@ class FBBase(object):
         self._socket.sendall(packet.encode())
       except Exception:
         logger.info("Connection closed.")
-        self._group.kill()
+        self.stop()
+#        self._group.kill()
         return
 
   def _read_loop(self):
@@ -50,12 +51,12 @@ class FBBase(object):
         data = self._socket.recv(512)
       except Exception:
         logger.info("Connection closed.")
-        self._group.kill()
+#        self._group.kill()
         return
 
       if data is None:
         logger.info("Empty data, no more connection.")
-        self._group.kill()
+#        self._group.kill()
         return
 
       buf += data

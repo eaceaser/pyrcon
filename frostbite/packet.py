@@ -30,6 +30,7 @@ class Packet(object):
 
     return packet
 
+  @staticmethod
   def strtoword(string):
     return string
 

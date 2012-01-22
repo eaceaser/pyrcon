@@ -88,7 +88,7 @@ class PlayerOnAuthenticated(FrostbiteMessage):
 
   @staticmethod
   def fromPacket(packet):
-    return PlayerOnAuthenticated(words[1])
+    return PlayerOnAuthenticated(packet.words[1])
 
 class PlayerOnJoin(FrostbiteMessage):
   def __init__(self, name, guid):
@@ -109,8 +109,11 @@ class PlayerOnLeave(FrostbiteMessage):
     self.info = info
 
   @staticmethod
+  
   def fromPacket(packet):
-    return PlayerOnLeave(*packet.words[1:])
+    name = packet.words[1]
+    collection = PlayerCollection.from_packet_array(packet.words[2:])
+    return PlayerOnLeave(name, collection)
 
 class PlayerOnSpawn(FrostbiteMessage):
   def __init__(self, name, team):
@@ -204,6 +207,16 @@ class ServerOnRoundOver(FrostbiteMessage):
   def fromPacket(packet):
     return ServerOnRoundOver(packet.words[1:])
 
+class ServerOnRoundOverPlayers(FrostbiteMessage):
+  def __init__(self, player_info):
+    self.words = ["server.onRoundOverPlayers"]
+    self.player_info = player_info
+  
+  @staticmethod
+  def fromPacket(packet):
+    info = PlayerCollection.from_packet_array(packet.words[1:])
+    return ServerOnRoundOverPlayers(info)
+
 class ServerOnRoundOverTeamScores(FrostbiteMessage):
   def __init__(self, team_scores):
     self.words = ["server.onRoundOverTeamScores"]
@@ -226,7 +239,8 @@ events = {
   u"punkBuster.onMessage": PunkBusterOnMessage.fromPacket,
   u"server.onLevelLoaded": ServerOnLevelLoaded.fromPacket,
   u"server.onRoundOver": ServerOnRoundOver.fromPacket,
-  u"server.ounRoundOverTeamScores": ServerOnRoundOverTeamScores.fromPacket
+  u"server.onRoundOverTeamScores": ServerOnRoundOverTeamScores.fromPacket,
+  u"server.onRoundOverPlayers": ServerOnRoundOverPlayers.fromPacket
 }
 
 # Commands
@@ -261,8 +275,8 @@ class AdminSayTeam(FrostbiteMessage):
     return AdminSayTeam(*packet.words[1:])
 
 class AdminSaySquad(FrostbiteMessage):
-  def __init__(self, message, teamId):
-    words = ["admin.say"]
+  def __init__(self, message, teamId, squadId):
+    self.words = ["admin.say"]
     self.words.extend([message, "squad", teamId, squadId])
 
   @staticmethod
@@ -270,8 +284,8 @@ class AdminSaySquad(FrostbiteMessage):
     return AdminSaySquad(*packet.words[1:])
 
 class AdminSayPlayer(FrostbiteMessage):
-  def __init__(self, message, teamId):
-    words = ["admin.say"]
+  def __init__(self, message, playerName):
+    self.words = ["admin.say"]
     self.words.extend([message, "player", playerName])
 
   @staticmethod
@@ -306,7 +320,7 @@ class AdminListTeamPlayers(AdminListPlayers):
 
   @staticmethod
   def fromPacket(packet):
-    return AdminlistTeamPlayers(packet.words[1])
+    return AdminListTeamPlayers(packet.words[1])
 
 class Logout(FrostbiteMessage):
   def __init__(self):

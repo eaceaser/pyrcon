@@ -39,6 +39,8 @@ class ProgressiveModes(EventHandler):
       self._server().addMap(map, mode_name, num_rounds).get()
     self._server().setNextMap(0)
     self._current_mode == mode_name
+    self._server().set_variable("vars.maxPlayers", mode["limit"])
+    self._server().say_all("Switching to: %s" % mode_name)
 
   def _server(self):
     return self._control.server
@@ -52,16 +54,20 @@ class ProgressiveModes(EventHandler):
     num_players = len(players)
     if num_players >= (self._info["max_players"] - self._max_threshold):
       logger.debug("Round ended with enough players.")
+      self._server().say_all("Round ended with close to max players!")
       self._num_rounds_at_max += 1
     else:
       logger.debug("Round ended without enough players. Resetting count.")
       self._num_rounds_at_max = 0
       if self._current_mode != self._players_to_modes[num_players]["mode"]:
+        self._server().say_all("Not enough players to sustain current game mode.")
         logger.debug("Should be running a different mode. Switching.")
         self._set_current_mode(self._players_to_modes[num_players])
 
     if self._num_rounds_at_max >= self._num_rounds_before_switching:
       logger.debug("Switching game modes!")
       self._set_current_mode(self._players_to_modes[self._info["max_players"] + 1])
+    else:
+      self._server().say_all("Will switch game modes in %s rounds." % (self._num_rounds_before_switching - self._num_rounds_at_max))
 
 module = ProgressiveModes

@@ -28,7 +28,6 @@ client, included in this project.
 # TODO
 
 - Finish pyrconc client
-- Write some modules.
 - Add tests and docstrings.
 - Use @properties.
 - Add a procon-compatible layer server so procon and its various tools can connect to pyrcon.

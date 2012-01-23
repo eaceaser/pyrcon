@@ -207,6 +207,20 @@ class SimpleJsonClient(object):
     self._send_queue.put((s, rv))
     return rv
 
+  def listVars(self):
+    rv = event.AsyncResult()
+    j = { "server": True, "methodName": "list_variables" }
+    s = json.dumps(j)
+    self._send_queue.put((s, rv))
+    return rv
+
+  def setVar(self, key, value):
+    rv = event.AsyncResult()
+    j = { "server": True, "methodName": "set_variable", "arguments": [key, value] }
+    s = json.dumps(j)
+    self._send_queue.put((s, rv))
+    return rv
+
 class Context(object):
   def help(self, cmd=None):
     if cmd is None:
@@ -260,6 +274,9 @@ class RootContext(Context):
     ban = InternalParser('ban', description="Ban List Context", add_help=False)
     ban.set_defaults(func=self._ban)
 
+    vars = InternalParser('vars', description="Server Variables Context", add_help=False)
+    vars.set_defaults(func=self._vars)
+
     self._parsers = {
       'info': info,
       'nextround': nextRound,
@@ -268,7 +285,8 @@ class RootContext(Context):
       'player': player,
       'ban': ban,
       'knownmaps': knownmaps,
-      'teams': teams
+      'teams': teams,
+      'vars': vars
     }
 
   def _serverInfo(self, args):
@@ -299,6 +317,10 @@ class RootContext(Context):
 
   def _ban(self, args):
     context = BanContext(client)
+    return context
+
+  def _vars(self, args):
+    context = VarsContext(client)
     return context
 
   def _knownMaps(self, args):
@@ -442,6 +464,37 @@ class BanContext(Context):
     bans = rv.get()
     formatted = ["%s (%s) - %s (%s) - %s" % (b[0], b[1], b[2], b[3], b[4]) for b in bans]
     return "\n".join(formatted)
+
+class VarsContext(Context):
+  _prompt = "vars"
+
+  def __init__(self, client):
+    self._client = client
+
+    list = InternalParser("list", add_help=False)
+    list.set_defaults(func=self._list)
+    set = InternalParser("set", add_help=False)
+    set.add_argument("name")
+    set.add_argument("value")
+    set.set_defaults(func=self._set)
+
+    self._parsers = {
+      'set': set,
+      'list': list
+    }
+
+  def _list(self, args):
+    rv = self._client.listVars()
+    vars = rv.get()
+    formatted = ["%s: %s" % (v, vars[v]) for v in vars]
+    return "\n".join(formatted)
+
+  def _set(self, args):
+    name = args.name
+    value = args.value
+    rv = self._client.setVar(name, value)
+    return rv.get()
+
 
 class Console(Greenlet):
   def __init__(self,client):

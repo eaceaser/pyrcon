@@ -617,176 +617,188 @@ commands = {
 
 # Variables
 class FrostbiteVariable(FrostbiteMessage):
-  def __init__(self, value = None):
+  def __init__(self, value):
     if value is not None:
-      self._words.append(value)
+      self.words.append(value)
 
   @staticmethod
   def fromPacket(packet):
     value = None
+    print packet.words
     if len(packet.words) > 1:
       value = packet.words[1]
-    return FrostbiteVariable(value)
+    return FrostbiteVariable.__init__(value)
+
+  def _parse_variable(self, packet, client):
+    if len(packet.words) > 1:
+      return packet.words[1]
+    else:
+      return packet.words[0]
+
+  filter = _parse_variable
 
 class VarsRanked(FrostbiteVariable):
   def __init__(self, value = None):
-    self._words = [ "vars.ranked" ]
-    FrostbiteVariable(self, value)
+    self.words = [ "vars.ranked" ]
+    self.name = "ranked"
+    FrostbiteVariable.__init__(self, value)
 
 class VarsServerName(FrostbiteVariable):
   def __init__(self, value = None):
-    self._words = ["vars.serverName"]
-    FrostbiteVariable(self, value)
+    self.words = ["vars.serverName"]
+    self.name = "serverName"
+    FrostbiteVariable.__init__(self, value)
 
 class VarsGamePassword(FrostbiteVariable):
   def __init__(self, value = None):
-    self._words = [ "vars.gamePassword" ]
-    FrostbiteVariable(self, value)
+    self.words = [ "vars.gamePassword" ]
+    self.name = "gamePassword"
+    FrostbiteVariable.__init__(self, value)
 
 class VarsAutoBalance(FrostbiteVariable):
   def __init__(self, value = None):
-    self._words = [ "vars.autoBalance" ]
-    FrostbiteVariable(self, value)
+    self.words = [ "vars.autoBalance" ]
+    FrostbiteVariable.__init__(self, value)
 
 class VarsFriendlyFire(FrostbiteVariable):
   def __init__(self, value = None):
-    self._words = [ "vars.friendlyFire" ]
-    FrostbiteVariable(self, value)
+    self.words = [ "vars.friendlyFire" ]
+    FrostbiteVariable.__init__(self, value)
 
 class VarsMaxPlayers(FrostbiteVariable):
   def __init__(self, value=None):
-    self._words = ["vars.maxPlayers"]
-    FrostbiteVariable(self, value)
+    self.words = ["vars.maxPlayers"]
+    FrostbiteVariable.__init__(self, value)
 
 class VarsKillCam(FrostbiteVariable):
   def __init__(self, value=None):
-    self._words = ["vars.killCam"]
-    FrostbiteVariable(self, value)
+    self.words = ["vars.killCam"]
+    FrostbiteVariable.__init__(self, value)
 
 class VarsMiniMap(FrostbiteVariable):
   def __init__(self, value=None):
-    self._words = ["vars.miniMap"]
-    FrostbiteVariable(self, value)
+    self.words = ["vars.miniMap"]
+    FrostbiteVariable.__init__(self, value)
 
 class VarsHud(FrostbiteVariable):
   def __init__(self, value=None):
-    self._words = ["vars.hud"]
-    FrostbiteVariable(self, value)
+    self.words = ["vars.hud"]
+    FrostbiteVariable.__init__(self, value)
 
 class VarsCrossHair(FrostbiteVariable):
   def __init__(self, value=None):
-    self._words = ["vars.crossHair"]
-    FrostbiteVariable(self, value)
+    self.words = ["vars.crossHair"]
+    FrostbiteVariable.__init__(self, value)
 
 class Vars3dSpotting(FrostbiteVariable):
   def __init__(self, value=None):
-    self._words = ["vars.3dSpotting"]
-    FrostbiteVariable(self, value)
+    self.words = ["vars.3dSpotting"]
+    FrostbiteVariable.__init__(self, value)
 
 class VarsMiniMapSpotting(FrostbiteVariable):
   def __init__(self, value=None):
-    self._words = [ "vars.miniMapSpotting" ]
-    FrostbiteVariable(self, value)
+    self.words = [ "vars.miniMapSpotting" ]
+    FrostbiteVariable.__init__(self, value)
 
 class VarsNameTag(FrostbiteVariable):
   def __init__(self, value=None):
     self.words = [ "vars.nameTag" ]
-    FrostbiteVariable(self, value)
+    FrostbiteVariable.__init__(self, value)
 
 class Vars3pCam(FrostbiteVariable):
   def __init__(self, value=None):
     self.words = ["vars.3pCam"]
-    FrostbiteVariable(self, value)
+    FrostbiteVariable.__init__(self, value)
 
 class VarsRegenerateHealth(FrostbiteVariable):
   def __init__(self, value = None):
     self.words = ["vars.regenerateHealth"]
-    FrostbiteVariable(self, value)
+    FrostbiteVariable.__init__(self, value)
 
 class VarsTeamKillCountForKick(FrostbiteVariable):
   def __init__(self, value = None):
     self.words = ["vars.teamKillCountForKick"]
-    FrostbiteVariable(self, value)
+    FrostbiteVariable.__init__(self, value)
 
 class VarsTeamKillValueIncrease(FrostbiteVariable):
   def __init__(self, value = None):
     self.words = ["vars.teamKillValueIncrease"]
-    FrostbiteVariable(self, value)
+    FrostbiteVariable.__init__(self, value)
 
 class VarsTeamKillValueDecreasePerSecond(FrostbiteVariable):
   def __init__(self, value = None):
     self.words=["vars.teamKillValueDecreasePerSecond"]
-    FrostbiteVariable(self, value)
+    FrostbiteVariable.__init__(self, value)
 
 class VarsTeamKillKickForBan(FrostbiteVariable):
-  def __init__(self, value = None):
+  def __init__(self, value=None):
     self.words = ["vars.teamKillKickForBan"]
-    FrostbiteVariable(self, value)
+    FrostbiteVariable.__init__(self, value)
 
 class VarsIdleTimeout(FrostbiteVariable):
-  def __init__(self, value = None):
+  def __init__(self, value=None):
     self.words = ["vars.idleTimeout"]
-    FrostbiteVariable(self, value)
+    FrostbiteVariable.__init__(self, value)
 
 class VarsIdleBanRounds(FrostbiteVariable):
-  def __init__(self, value = None):
+  def __init__(self, value=None):
     self.words = ["vars.idleBanRounds"]
-    FrostbiteVariable(self, value)
+    FrostbiteVariable.__init__(self, value)
 
 class VarsRoundStartPlayerCount(FrostbiteVariable):
   def __init__(self, value=None):
     self.words = [ "vars.roundStartPlayerCount" ]
-    FrostbiteVariable(self, value)
+    FrostbiteVariable.__init__(self, value)
 
 class VarsRoundRestartPlayerCount(FrostbiteVariable):
   def __init__(self, value=None):
     self.words = ["vars.roundRestartPlayerCount"]
-    FrostbiteVariable(self, value)
+    FrostbiteVariable.__init__(self, value)
 
 class VarsVehicleSpawnAllowed(FrostbiteVariable):
-  def __init__(self, value = None):
+  def __init__(self, value=None):
     self.words = [ "vars.vehicleSpawnAllowed" ]
-    FrostbiteVariable(self, value)
+    FrostbiteVariable.__init__(self, value)
 
 class VarsVehicleSpawnDelay(FrostbiteVariable):
-  def __init__(self, value = None):
+  def __init__(self, value=None):
     self.words = ["vars.vehicleSpawnDelay"]
-    FrostbiteVariable(self, value)
+    FrostbiteVariable.__init__(self, value)
 
 class VarsSoldierHealth(FrostbiteVariable):
   def __init__(self, value=None):
     self.words = ["vars.soldierHealth"]
-    FrostbiteVariable(self, value)
+    FrostbiteVariable.__init__(self, value)
 
 class VarsPlayerRespawnTime(FrostbiteVariable):
-  def __init__(self, value = None):
+  def __init__(self, value=None):
     self.words = ["vars.playerRespawnTime"]
-    FrostbiteVariable(self, value)
+    FrostbiteVariable.__init__(self, value)
 
 class VarsPlayerManDownTime(FrostbiteVariable):
   def __init__(self, value=None):
     self.words = ["vars.playerManDownTime"]
-    FrostbiteVariable(self, value)
+    FrostbiteVariable.__init__(self, value)
 
 class VarsBulletDamage(FrostbiteVariable):
   def __init__(self, value=None):
     self.words = [ "vars.bulletDamage" ]
-    FrostbiteVariable(self, value)
+    FrostbiteVariable.__init__(self, value)
 
 class VarsGameModeCounter(FrostbiteVariable):
-  def __init__(self, value = None):
+  def __init__(self, value=None):
     self.words = ["vars.gameModeCounter"]
-    FrostbiteVariable(self, value)
+    FrostbiteVariable.__init__(self, value)
 
 class VarsOnlySquadLeaderSpawn(FrostbiteVariable):
-  def __init__(self, value = None):
+  def __init__(self, value=None):
     self.words = ["vars.onlySquadLeaderSpawn"]
-    FrostbiteVariable(self, value)
+    FrostbiteVariable.__init__(self, value)
 
 class VarsUnlockMode(FrostbiteVariable):
-  def __init__(self, value = None):
+  def __init__(self, value=None):
     self.words = ["vars.unlockMode"]
-    FrostbiteVariable(self, value)
+    FrostbiteVariable.__init__(self, value)
 
 variables = {
   u'vars.ranked': VarsRanked.fromPacket,
@@ -795,7 +807,7 @@ variables = {
   u'vars.autoBalance': VarsAutoBalance.fromPacket,
   u'vars.friendlyFire': VarsFriendlyFire.fromPacket,
   u'vars.maxPlayers': VarsMaxPlayers.fromPacket,
-  u'vars.killCam': VarsMaxPlayers.fromPacket,
+  u'vars.killCam': VarsKillCam.fromPacket,
   u'vars.miniMap': VarsMiniMap.fromPacket,
   u'vars.hud': VarsHud.fromPacket,
   u'vars.crossHair': VarsCrossHair.fromPacket,
@@ -819,4 +831,37 @@ variables = {
   u'vars.gameModeCounter': VarsGameModeCounter.fromPacket,
   u'vars.onlySquadLeaderSpawn': VarsOnlySquadLeaderSpawn.fromPacket,
   u'vars.unlockMode': VarsUnlockMode.fromPacket
+}
+
+variable_types = {
+  u'vars.ranked': VarsRanked,
+  u'vars.serverName': VarsServerName,
+  u'vars.gamePassword': VarsGamePassword,
+  u'vars.autoBalance': VarsAutoBalance,
+  u'vars.friendlyFire': VarsFriendlyFire,
+  u'vars.maxPlayers': VarsMaxPlayers,
+  u'vars.killCam': VarsKillCam,
+  u'vars.miniMap': VarsMiniMap,
+  u'vars.hud': VarsHud,
+  u'vars.crossHair': VarsCrossHair,
+  u'vars.3dSpotting': Vars3dSpotting,
+  u'vars.miniMapSpotting': VarsMiniMapSpotting,
+  u'vars.regenerateHealth': VarsRegenerateHealth,
+  u'vars.teamKillCountForKick': VarsTeamKillCountForKick,
+  u'vars.teamKillValueIncrease': VarsTeamKillValueIncrease,
+  u'vars.teamKillValueDecreasePerSecond': VarsTeamKillValueDecreasePerSecond,
+  u'vars.teamKillKickForBan': VarsTeamKillKickForBan,
+  u'vars.idleTimeout': VarsIdleTimeout,
+  u'vars.idleBanRounds': VarsIdleBanRounds,
+  u'vars.roundStartPlayerCount': VarsRoundStartPlayerCount,
+  u'vars.roundRestartPlayerCount': VarsRoundRestartPlayerCount,
+  u'vars.vehicleSpawnAllowed': VarsVehicleSpawnAllowed,
+  u'vars.vehicleSpawnDelay': VarsVehicleSpawnDelay,
+  u'vars.soldierHealth': VarsSoldierHealth,
+  u'vars.playerRespawnTime': VarsPlayerRespawnTime,
+  u'vars.playerManDownTime': VarsPlayerManDownTime,
+  u'vars.bulletDamage': VarsBulletDamage,
+  u'vars.gameModeCounter': VarsGameModeCounter,
+  u'vars.onlySquadLeaderSpawn': VarsOnlySquadLeaderSpawn,
+  u'vars.unlockMode': VarsUnlockMode
 }

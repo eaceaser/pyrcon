@@ -199,3 +199,23 @@ class BFServer(object):
     cmd = commands.AdminSay(msg)
     rv = self._client.send(cmd)
     return rv
+
+  def list_variables(self):
+    assert self._isLoggedIn()
+    outer_rv = event.AsyncResult()
+    rvs = []
+    for var_type in commands.variable_types.values():
+      var = var_type(None)
+      var_rv = event.AsyncResult()
+      rv = self._client.send(var)
+      gevent.spawn(lambda v,r: [v.words[0], r.get()], var, rv).link(var_rv)
+      rvs.append(var_rv)
+
+    gevent.spawn(lambda rs: dict([p.get() for p in rs]), rvs).link(outer_rv)
+    return outer_rv
+
+  def set_variable(self, key, val):
+    assert self._isLoggedIn()
+    variable = commands.variable_types[key](val)
+    rv = self._client.send(variable)
+    return rv

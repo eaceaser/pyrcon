@@ -1,4 +1,4 @@
-from frostbite import client, commands
+from frostbite import crypt, client, commands
 
 import gevent
 from gevent import event
@@ -20,10 +20,13 @@ class BFServer(object):
 
   def _login(self):
     assert self._hasClient()
-    login = commands.Login(self._password)
-    loginResponse = self._client.send(login)
-    # NOTE: blocks until ware logged in
-    loginResponse.get()
+    salt_command = commands.LoginHashed()
+    salt_response = self._client.send(salt_command)
+    salt = salt_response.get()
+
+    login_command = commands.LoginHashed(password=crypt.hash_pass(salt, self._password))
+    loginResponse = self._client.send(login_command)
+    response = loginResponse.get()
     self._loggedIn = True
     self._event_handlers = []
 
@@ -94,7 +97,7 @@ class BFServer(object):
   def _enable_events(self):
     assert self._hasClient()
     assert self._isLoggedIn()
-    msg = commands.AdminEventsEnabled(True)
+    msg = commands.AdminEventsEnabled(enable=True)
     rv = self._client.send(msg)
     rv.get()
 
@@ -168,7 +171,7 @@ class BFServer(object):
 
   def listPlayers(self):
     assert self._isLoggedIn()
-    cmd = commands.AdminListAllPlayers()
+    cmd = commands.AdminListPlayers(scope="all")
     innerrv = self._client.send(cmd)
     rv = event.AsyncResult()
     gevent.spawn(lambda r: r.get().to_dict(), innerrv).link(rv)

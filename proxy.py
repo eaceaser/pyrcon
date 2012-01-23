@@ -17,16 +17,17 @@ class Proxy(object):
     self._server.start()
 
   def _handle_command(self, server, seq, command):
-    if isinstance(command, frostbite.commands.LoginRequest):
-      salt = self._control.getSalt()
-      salt_response = frostbite.commands.ResponsePacket("OK", salt)
-      server.sent_salt = salt
-      server.send(seq, salt_response)
-    elif isinstance(command, frostbite.commands.LoginSecret):
-      if self._control.auth(server.sent_salt, command.secret):
-        server.send(seq, frostbite.commands.ResponsePacket("OK"))
+    if isinstance(command, frostbite.commands.LoginHashed):
+      if command.password is None:
+        salt = self._control.get_salt()
+        salt_response = frostbite.commands.ResponsePacket("OK", salt)
+        server.sent_salt = salt
+        server.send(seq, salt_response)
       else:
-        server.send(seq, frostbite.commands.ResponsePacket("InvalidPasswordHash"))
+        if self._control.auth(server.sent_salt, command.password):
+          server.send(seq, frostbite.commands.ResponsePacket("OK"))
+        else:
+          server.send(seq, frostbite.commands.ResponsePacket("InvalidPasswordHash"))
     elif isinstance(command, frostbite.commands.Version):
       version = self._control.server.version().get()
       t = frostbite.commands.ResponsePacket("OK", *version.split(" "))
@@ -35,7 +36,7 @@ class Proxy(object):
       info = self._control.server.info().get()
       arr = ServerState.from_dict(info)
       server.send(seq, frostbite.commands.ResponsePacket("OK", *arr.to_packet_array()))
-    elif isinstance(command, frostbite.commands.AdminListAllPlayers):
+    elif isinstance(command, frostbite.commands.AdminListPlayers):
       players = self._control.server.listPlayers().get()
       pa = PlayerCollection.from_dict(players).to_packet_array()
       server.send(seq, frostbite.commands.ResponsePacket("OK", *pa))

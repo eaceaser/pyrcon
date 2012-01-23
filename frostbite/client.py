@@ -27,6 +27,6 @@ class FBClient(FBBase):
   def send(self, command):
     response = AsyncResult()
     packet = command.toPacket(self._next_seq())
-    self._inflight[packet.seqNumber] = (command.filter, response)
+    self._inflight[packet.seqNumber] = (command.response, response)
     self._send_queue.put(packet)
     return response

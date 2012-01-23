@@ -15,7 +15,7 @@ class SimpleJsonServer:
     logger.info("Simple server started.")
     # Auth
     fileobj = self._socket.makefile()
-    salt = self._control.getSalt()
+    salt = self._control.get_salt()
     msg = { 'salt': salt }
 
     m = json.dumps(msg)

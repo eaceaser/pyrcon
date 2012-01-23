@@ -21,7 +21,7 @@ modules:
         rounds_per_map: 1
         maps:
           - MP_Subway
-          - XP_003
+          - XP1_003
           - MP_001
           - XP1_001
           - MP_003

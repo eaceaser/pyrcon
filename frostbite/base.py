@@ -85,28 +85,21 @@ class FBBase(object):
   def _handle_command(self, packet):
     method = packet.words[0]
 
-    command_builder = frostbite.commands.commands.get(method, None)
-    if command_builder is not None:
-      logger.debug("Command received: %s" % packet)
-      command = command_builder(packet)
-      gevent.spawn(self._command_handler, self, packet.seqNumber, command)
-      return
-
-    event_builder = frostbite.commands.events.get(method, None)
-    if event_builder is not None:
-      logger.debug("Event received: %s" % packet)
-      command = event_builder(packet)
-      gevent.spawn(self._event_handler, self, packet.seqNumber, command)
-      return
-
-    variable_builder = frostbite.commands.variables.get(method, None)
-    if variable_builder is not None:
-      logger.debug("Variable received: %s" % packet)
-      command = variable_builder(packet)
-      gevent.spawn(self._command_handler, self, packet.seqNumber, command)
-      return
-
-    logger.debug("Unknown message: %s" % packet)
+    generator = frostbite.commands.message_generators.get(method, None)
+    if generator is not None:
+      logger.debug("Message received: %s" % packet)
+      message = generator(packet)
+      if isinstance(message, frostbite.commands.FrostbiteEvent):
+        logger.debug("Message is an event. Handing off to event handler.")
+        gevent.spawn(self._event_handler, self, packet.seqNumber, message)
+      elif isinstance(message, frostbite.commands.FrostbiteVariable):
+        logger.debug("Message is a variable. Handing off to command handler.")
+        gevent.spawn(self._command_handler, self, packet.seqNumber, message)
+      else:
+        logger.debug("Message is a command. Handing off to command handler.")
+        gevent.spawn(self._command_handler, self, packet.seqNumber, message)
+    else:
+      logger.debug("Unknown message: %s" % packet)
 
   def stop(self):
     self._group.kill()

@@ -157,6 +157,9 @@ class PlayerCollection(object):
   def get_field_names(self):
     return self._names
 
+  def players(self):
+    return self._players
+
   def to_packet_array(self):
     rv = [str(len(self._names))]
     rv.extend(self._names)

@@ -9,7 +9,7 @@ class Packet(object):
     self.originatedFromServer = originatedFromServer
     self.isResponse = isResponse
     self.seqNumber = seqNumber
-    self.words = words
+    self.words = [str(word) for word in words]
 
   def __str__(self):
     return "<Packet: originatedFromServer=%s isResponse=%s seqNumber=%i words=%s>" % (self.originatedFromServer, self.isResponse, self.seqNumber, self.words)
@@ -29,10 +29,6 @@ class Packet(object):
       packet += enc
 
     return packet
-
-  @staticmethod
-  def strtoword(string):
-    return string
 
   @staticmethod
   def decode(buf):

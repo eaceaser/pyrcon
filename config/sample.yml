@@ -11,3 +11,76 @@ modules:
     - interval: 60
       text: This is a test message!
       delay: 0
+
+   progressivemodes:
+    max_player_threshold: 2
+    num_rounds_before_switching: 2
+    modes:
+      - mode: SquadDeathMatch0
+        limit: 16
+        rounds_per_map: 1
+        maps:
+          - MP_Subway
+          - XP_003
+          - MP_001
+          - XP1_001
+          - MP_003
+          - MP_007
+          - MP_017
+          - MP_013
+          - MP_012
+          - MP_011
+          - XP1_002
+          - XP1_004
+          - MP_018
+      - mode: RushLarge0
+        limit: 24
+        rounds_per_map: 2
+        maps:
+          - MP_Subway
+          - XP1_003
+          - MP_001
+          - XP1_001
+          - MP_003
+          - MP_007
+          - MP_017
+          - MP_013
+          - MP_012
+          - MP_011
+          - XP1_002
+          - XP1_004
+          - MP_018
+      - mode: ConquestSmall0
+        limit: 38
+        rounds_per_map: 1
+        maps:
+          - MP_Subway
+          - XP1_003
+          - MP_001
+          - XP1_001
+          - MP_003
+          - MP_007
+          - MP_017
+          - MP_013
+          - MP_012
+          - MP_011
+          - XP1_002
+          - XP1_004
+          - MP_018
+      - mode: ConquestLarge1
+        limit: 64
+        rounds_per_map: 2
+        maps:
+          - MP_Subway
+          - XP1_003
+          - MP_001
+          - XP1_001
+          - MP_003
+          - MP_007
+          - MP_017
+          - MP_013
+          - MP_012
+          - MP_011
+          - XP1_002
+          - XP1_004
+          - MP_018

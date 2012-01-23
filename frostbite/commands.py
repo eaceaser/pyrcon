@@ -208,9 +208,9 @@ class ServerOnRoundOver(FrostbiteMessage):
     return ServerOnRoundOver(packet.words[1:])
 
 class ServerOnRoundOverPlayers(FrostbiteMessage):
-  def __init__(self, player_info):
+  def __init__(self, players):
     self.words = ["server.onRoundOverPlayers"]
-    self.player_info = player_info
+    self.players = players
   
   @staticmethod
   def fromPacket(packet):
@@ -477,7 +477,7 @@ class MapListSave(FrostbiteMessage):
 class MapListAdd(FrostbiteMessage):
   def __init__(self, mapName, gamemode, rounds, index = None):
     self.words = ["mapList.add"]
-    self.words.extend([mapName, gamemode, rounds])
+    self.words.extend([mapName, gamemode, str(rounds)])
 
   @staticmethod
   def fromPacket(packet):
@@ -788,3 +788,35 @@ class VarsUnlockMode(FrostbiteVariable):
     self.words = ["vars.unlockMode"]
     FrostbiteVariable(self, value)
 
+variables = {
+  u'vars.ranked': VarsRanked.fromPacket,
+  u'vars.serverName': VarsServerName.fromPacket,
+  u'vars.gamePassword': VarsGamePassword.fromPacket,
+  u'vars.autoBalance': VarsAutoBalance.fromPacket,
+  u'vars.friendlyFire': VarsFriendlyFire.fromPacket,
+  u'vars.maxPlayers': VarsMaxPlayers.fromPacket,
+  u'vars.killCam': VarsMaxPlayers.fromPacket,
+  u'vars.miniMap': VarsMiniMap.fromPacket,
+  u'vars.hud': VarsHud.fromPacket,
+  u'vars.crossHair': VarsCrossHair.fromPacket,
+  u'vars.3dSpotting': Vars3dSpotting.fromPacket,
+  u'vars.miniMapSpotting': VarsMiniMapSpotting.fromPacket,
+  u'vars.regenerateHealth': VarsRegenerateHealth.fromPacket,
+  u'vars.teamKillCountForKick': VarsTeamKillCountForKick.fromPacket,
+  u'vars.teamKillValueIncrease': VarsTeamKillValueIncrease.fromPacket,
+  u'vars.teamKillValueDecreasePerSecond': VarsTeamKillValueDecreasePerSecond.fromPacket,
+  u'vars.teamKillKickForBan': VarsTeamKillKickForBan.fromPacket,
+  u'vars.idleTimeout': VarsIdleTimeout.fromPacket,
+  u'vars.idleBanRounds': VarsIdleBanRounds.fromPacket,
+  u'vars.roundStartPlayerCount': VarsRoundStartPlayerCount.fromPacket,
+  u'vars.roundRestartPlayerCount': VarsRoundRestartPlayerCount.fromPacket,
+  u'vars.vehicleSpawnAllowed': VarsVehicleSpawnAllowed.fromPacket,
+  u'vars.vehicleSpawnDelay': VarsVehicleSpawnDelay.fromPacket,
+  u'vars.soldierHealth': VarsSoldierHealth.fromPacket,
+  u'vars.playerRespawnTime': VarsPlayerRespawnTime.fromPacket,
+  u'vars.playerManDownTime': VarsPlayerManDownTime.fromPacket,
+  u'vars.bulletDamage': VarsBulletDamage.fromPacket,
+  u'vars.gameModeCounter': VarsGameModeCounter.fromPacket,
+  u'vars.onlySquadLeaderSpawn': VarsOnlySquadLeaderSpawn.fromPacket,
+  u'vars.unlockMode': VarsUnlockMode.fromPacket
+}

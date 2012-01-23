@@ -12,7 +12,7 @@ class Packet(object):
     self.words = words
 
   def __str__(self):
-    return "<Packet: originatedFromServer=%s isResponse=%s seqNumber=%i words=%s" % (self.originatedFromServer, self.isResponse, self.seqNumber, self.words)
+    return "<Packet: originatedFromServer=%s isResponse=%s seqNumber=%i words=%s>" % (self.originatedFromServer, self.isResponse, self.seqNumber, self.words)
 
   def encode(self):
     header = self.seqNumber & 0x3fffffff

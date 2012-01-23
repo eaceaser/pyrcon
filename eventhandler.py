@@ -34,5 +34,8 @@ class EventHandler(Module):
   def on_round_over(self, winning_team):
     pass
 
+  def on_round_over_players(self, players):
+    pass
+
   def on_round_over_team_scores(self, team_scores):
     pass

@@ -151,6 +151,9 @@ class PlayerCollection(object):
   def __setitem__(self, key, value):
     self._players.__setitem__(key, value)
 
+  def __len__(self):
+    return len(self._players)
+
   def get_field_names(self):
     return self._names
 

@@ -59,7 +59,8 @@ if modules_config is not None:
     logger.info("Loading module: %s" % module_name)
     module_config = modules_config[module_name]
     i = __import__("modules.%s" % module_name, globals(), locals(), ['module'], -1)
-    i.module(control, module_config)
+    module = i.module(control, module_config)
+    control.server.add_event_handler(module)
 
 simple.simpleServer(control)
 proxy = Proxy(control)

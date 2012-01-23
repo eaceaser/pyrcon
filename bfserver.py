@@ -74,7 +74,10 @@ class BFServer(object):
     elif isinstance(command, commands.ServerOnRoundOver):
       for handler in self._handlers:
         gevent.spawn(lambda h,c: h.on_round_over(c.winning_team), handler, command)
-    elif isinstance(command, commands.OnRoundOverTeamScores):
+    elif isinstance(command, commands.ServerOnRoundOverPlayers):
+      for handler in self._handlers:
+        gevent.spawn(lambda h,c: h.on_round_over_players(c.players), handler, command)
+    elif isinstance(command, commands.ServerOnRoundOverTeamScores):
       for handler in self._handlers:
         gevent.spawn(lambda h,c: h.on_round_over_team_scores(c.team_scores), handler, command)
 

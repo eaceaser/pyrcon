@@ -627,7 +627,10 @@ class FrostbiteVariable(FrostbiteMessage):
     print packet.words
     if len(packet.words) > 1:
       value = packet.words[1]
-    return FrostbiteVariable.__init__(value)
+
+    var_name = packet.words[0]
+    builder = variable_types[var_name]
+    return builder(value)
 
   def _parse_variable(self, packet, client):
     if len(packet.words) > 1:

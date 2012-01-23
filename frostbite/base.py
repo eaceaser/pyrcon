@@ -99,6 +99,13 @@ class FBBase(object):
       gevent.spawn(self._event_handler, self, packet.seqNumber, command)
       return
 
+    variable_builder = frostbite.commands.variables.get(method, None)
+    if variable_builder is not None:
+      logger.debug("Variable received: %s" % packet)
+      command = variable_builder(packet)
+      gevent.spawn(self._command_handler, self, packet.seqNumber, command)
+      return
+
     logger.debug("Unknown message: %s" % packet)
 
   def stop(self):

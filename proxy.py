@@ -3,7 +3,7 @@ import binascii
 
 import frostbite.commands
 from frostbite.server import FBServer
-from frostbite.serverstructs import ServerState
+from frostbite.serverstructs import ServerState, PlayerCollection
 
 from gevent import event
 from gevent.server import StreamServer
@@ -37,8 +37,12 @@ class Proxy(object):
       server.send(seq, frostbite.commands.ResponsePacket("OK", *arr.to_packet_array()))
     elif isinstance(command, frostbite.commands.AdminListAllPlayers):
       players = self._control.server.listPlayers().get()
-      pa = players.to_packet_array()
+      pa = PlayerCollection.from_dict(players).to_packet_array()
       server.send(seq, frostbite.commands.ResponsePacket("OK", *pa))
+    elif isinstance(command, frostbite.commands.FrostbiteVariable):
+      var_name = command.words[0]
+      rv = self._control.server.get_variable(var_name)
+      server.send(seq, frostbite.commands.ResponsePacket("OK", rv.get()))
     else:
       server.send(seq, frostbite.commands.ResponsePacket("OK"))
 

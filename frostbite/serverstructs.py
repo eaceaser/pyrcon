@@ -160,6 +160,13 @@ class PlayerCollection(object):
   def players(self):
     return self._players
 
+  @staticmethod
+  def from_dict(dict):
+    return PlayerCollection(dict["fields"], dict["players"])
+
+  def to_dict(self):
+    return { "fields": self.get_field_names(), "players": self.players() }
+
   def to_packet_array(self):
     rv = [str(len(self._names))]
     rv.extend(self._names)

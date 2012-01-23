@@ -171,7 +171,7 @@ class BFServer(object):
     cmd = commands.AdminListAllPlayers()
     innerrv = self._client.send(cmd)
     rv = event.AsyncResult()
-    gevent.spawn(lambda r: r.get().players(), innerrv).link(rv)
+    gevent.spawn(lambda r: r.get().to_dict(), innerrv).link(rv)
     return rv
 
   def kickPlayer(self, playerName, reason=None):
@@ -217,5 +217,11 @@ class BFServer(object):
   def set_variable(self, key, val):
     assert self._isLoggedIn()
     variable = commands.variable_types[key](val)
+    rv = self._client.send(variable)
+    return rv
+
+  def get_variable(self, key):
+    assert self._isLoggedIn()
+    variable = commands.variable_types[key]()
     rv = self._client.send(variable)
     return rv

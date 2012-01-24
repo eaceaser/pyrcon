@@ -28,6 +28,8 @@ class Proxy(object):
           server.send(seq, frostbite.commands.ResponsePacket("OK"))
         else:
           server.send(seq, frostbite.commands.ResponsePacket("InvalidPasswordHash"))
+    elif isinstance(command, frostbite.commands.FrostbiteMessage):
+      message = command.words[0]
     elif isinstance(command, frostbite.commands.Version):
       version = self._control.server.version().get()
       t = frostbite.commands.ResponsePacket("OK", *version.split(" "))

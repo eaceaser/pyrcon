@@ -30,7 +30,6 @@ client, included in this project.
 - Finish pyrconc client
 - Add tests and docstrings.
 - Use @properties.
-- Add a procon-compatible layer server so procon and its various tools can connect to pyrcon.
 - Remove the simple JSON protocol and replace it with a structured protobuf-driven protocol.
 - Create a web frontend for pyrcon (a separate project that speaks this new protocol.)
 - Add multi-user authentication.

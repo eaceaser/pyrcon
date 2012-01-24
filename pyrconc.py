@@ -85,7 +85,7 @@ class SimpleJsonClient(object):
 
   def nextRound(self):
     rv = event.AsyncResult()
-    j = { "server": True, "methodName": "nextRound" }
+    j = { "server": True, "methodName": "next_round" }
     s = json.dumps(j)
     self._send_queue.put((s, rv))
     return rv
@@ -106,28 +106,28 @@ class SimpleJsonClient(object):
 
   def restartRound(self):
     rv = event.AsyncResult()
-    j = { "server": True, "methodName": "restartRound" }
+    j = { "server": True, "methodName": "restart_round" }
     s = json.dumps(j)
     self._send_queue.put((s, rv))
     return rv
 
   def listMaps(self):
     rv = event.AsyncResult()
-    j = { "server": True, "methodName": "listMaps" }
+    j = { "server": True, "methodName": "list_maps" }
     s = json.dumps(j)
     self._send_queue.put((s, rv))
     return rv
 
   def listMapIndices(self):
     rv = event.AsyncResult()
-    j = { "server": True, "methodName": "getMapIndices"}
+    j = { "server": True, "methodName": "get_map_indices"}
     s = json.dumps(j)
     self._send_queue.put((s, rv))
     return rv
 
   def addMap(self, name, gamemode, rounds):
     rv = event.AsyncResult()
-    j = { "server": True, "methodName": "addMap" }
+    j = { "server": True, "methodName": "add_map" }
     j["arguments"] = [name, gamemode, rounds]
     s = json.dumps(j)
     self._send_queue.put((s, rv))
@@ -135,56 +135,56 @@ class SimpleJsonClient(object):
 
   def removeMap(self, index):
     rv = event.AsyncResult()
-    j = { "server": True, "methodName": "removeMap", "arguments": [index] }
+    j = { "server": True, "methodName": "remove_map", "arguments": [index] }
     s = json.dumps(j)
     self._send_queue.put((s, rv))
     return rv
 
   def saveMaps(self):
     rv = event.AsyncResult()
-    j = { "server": True, "methodName": "saveMapList" }
+    j = { "server": True, "methodName": "save_map_list" }
     s = json.dumps(j)
     self._send_queue.put((s, rv))
     return rv
 
   def knownMaps(self):
     rv = event.AsyncResult()
-    j = { "server": False, "methodName": "knownMaps" }
+    j = { "server": False, "methodName": "known_maps" }
     s = json.dumps(j)
     self._send_queue.put((s, rv))
     return rv
 
   def setNextMap(self, position):
     rv = event.AsyncResult()
-    j = { "server": True, "methodName": "setNextMap", "arguments": [position] }
+    j = { "server": True, "methodName": "set_next_map", "arguments": [position] }
     s = json.dumps(j)
     self._send_queue.put((s, rv))
     return rv
 
   def clearMaps(self):
     rv = event.AsyncResult()
-    j = { "server": True, "methodName": "clearMapList" }
+    j = { "server": True, "methodName": "clear_map_list" }
     s = json.dumps(j)
     self._send_queue.put((s, rv))
     return rv
 
   def listPlayers(self):
     rv = event.AsyncResult()
-    j = { "server": True, "methodName": "listPlayers" }
+    j = { "server": True, "methodName": "list_all_players" }
     s = json.dumps(j)
     self._send_queue.put((s, rv))
     return rv
 
   def teams(self):
     rv = event.AsyncResult()
-    j = { "server": False, "methodName": "listTeams" }
+    j = { "server": False, "methodName": "list_teams" }
     s = json.dumps(j)
     self._send_queue.put((s, rv))
     return rv
 
   def kickPlayer(self, player, reason=None):
     rv = event.AsyncResult()
-    j = { "server": True, "methodName": "kickPlayer" }
+    j = { "server": True, "methodName": "kick_player" }
     args = [ player ]
     if reason is not None:
       args.append(reason)
@@ -195,14 +195,14 @@ class SimpleJsonClient(object):
 
   def killPlayer(self, player):
     rv = event.AsyncResult()
-    j = { "server": True, "methodName": killPlayer, "arguments": [ player ] }
+    j = { "server": True, "methodName": "kill_player", "arguments": [ player ] }
     s = json.dumps(j)
     self._send_queue.put((s, rv))
     return rv
 
   def listBans(self):
     rv = event.AsyncResult()
-    j = { "server": True, "methodName": "listBans" }
+    j = { "server": True, "methodName": "list_bans" }
     s = json.dumps(j)
     self._send_queue.put((s, rv))
     return rv

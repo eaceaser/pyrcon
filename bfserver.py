@@ -12,14 +12,18 @@ class BFServer(object):
     self._client = None
     self._loggedIn = False
     self._mapListLoaded = False
+    self._events = {}
     self._handlers = []
+
+    self._define_events()
+    self._define_methods()
 
     self._attemptConnect()
     self._login()
     self._enable_events()
 
   def _login(self):
-    assert self._hasClient()
+    assert self._has_client()
     salt_command = commands.LoginHashed()
     salt_response = self._client.send(salt_command)
     salt = salt_response.get()
@@ -30,73 +34,100 @@ class BFServer(object):
     self._loggedIn = True
     self._event_handlers = []
 
-  def _hasClient(self):
+  def _has_client(self):
     return self._client is not None
 
-  def _isLoggedIn(self):
-    return self._loggedIn is True
-
-  def _mapListIsLoaded(self):
-    return self._mapListLoaded is True
+  def _is_logged_in(self):
+    return self._has_client() and self._loggedIn is True
 
   def _attemptConnect(self):
     self._client = client.FBClient(self._host, self._port, self._dispatch_event)
     self._client.start()
 
+  def _define_method_wrapper(self, method_name, message_type, arg_names=[], defaults={}, out=None, assertion=None):
+    def method(s=self, *args):
+      if assertion is not None:
+        assertion()
+
+      kwargs = {}
+      if arg_names is not None:
+        for name, arg in map(None, arg_names, args):
+          kwargs[name] = arg
+      for key in defaults:
+        kwargs[key] = defaults[key]
+
+      msg = message_type(**kwargs)
+      msg_rv = self._client.send(msg)
+      if out is not None:
+        rv = event.AsyncResult()
+        gevent.spawn(out, msg_rv).link(rv)
+        return rv
+      else:
+        return msg_rv
+    setattr(self, method_name, method)
+    self.__dict__[method_name] = method
+
+  def _define_methods(self):
+    d = self._define_method_wrapper
+    d("version", commands.Version, assertion=self._has_client)
+    d("next_round", commands.MapListRunNextRound, assertion=self._is_logged_in)
+    d("restart_round", commands.MapListRestartRound, assertion=self._is_logged_in)
+    d("info", commands.ServerInfo, out=lambda r:r.get().to_dict(), assertion=self._has_client)
+    d("list_maps", commands.MapListList, out=lambda r:[[i.name, i.gamemode, i.rounds] for i in r.get()], assertion=self._is_logged_in)
+    d("get_map_indices", commands.MapListGetMapIndices, assertion=self._is_logged_in)
+    d("add_map", commands.MapListAdd, ["name", "gamemode", "rounds"], assertion=self._is_logged_in)
+    d("set_next_map", commands.MapListSetNextMapIndex, ["index"], assertion=self._is_logged_in)
+    d("clear_map_list", commands.MapListClear, assertion=self._is_logged_in)
+    d("save_map_list", commands.MapListSave, assertion=self._is_logged_in)
+    d("remove_map", commands.MapListRemove, ["index"], assertion=self._is_logged_in)
+    d("list_all_players", commands.AdminListPlayers, out=lambda r:r.get().to_dict(), defaults={"scope":"all"}, assertion=self._is_logged_in)
+    d("kick_player", commands.AdminKickPlayer, ["player_name", "reason"], assertion=self._is_logged_in)
+    d("kill_player", commands.AdminKillPlayer, ["player_name"], assertion=self._is_logged_in)
+    d("list_bans", commands.BanListList, assertion=self._is_logged_in)
+    d("say_all", commands.AdminSay, ["message"], defaults={"scope":"all"}, assertion=self._is_logged_in)
+
+  def _define_event_dispatch(self, message, dispatch):
+    self._events[message] = dispatch
+
+  def _define_events(self):
+    d = self._define_event_dispatch
+    d(commands.PlayerOnAuthenticated,
+      lambda h,c: h.on_player_authenticated(c.name))
+    d(commands.PlayerOnJoin,
+      lambda h,c: h.on_player_join(c.name, c.guid))
+    d(commands.PlayerOnLeave,
+      lambda h,c: h.on_player_leave(c.name, c.info))
+    d(commands.PlayerOnSpawn,
+      lambda h,c: h.on_player_spawn(c.name, c.team))
+    d(commands.PlayerOnKill,
+      lambda h,c: h.on_player_kill(c.killer, c.killed, c.weapon, c.headshot))
+    d(commands.PlayerOnChat,
+      lambda h,c: h.on_player_chat(c.name, c.text))
+    d(commands.PlayerOnSquadChange,
+      lambda h,c: h.on_player_squad_change(c.name, c.team, c.squad))
+    d(commands.PlayerOnTeamChange,
+      lambda h,c: h.on_player_team_change(c.name, c.team, c.squad))
+    d(commands.PunkBusterOnMessage,
+      lambda h,c: h.on_punkbuster_message(c.message))
+    d(commands.ServerOnLevelLoaded,
+      lambda h,c: h.on_level_loaded(c.name, c.gamemode, c.rounds_played, c.rounds_total))
+    d(commands.ServerOnRoundOver,
+      lambda h,c: h.on_round_over(c.winning_team))
+    d(commands.ServerOnRoundOverPlayers,
+      lambda h,c: h.on_round_over_players(c.players))
+    d(commands.ServerOnRoundOverTeamScores,
+      lambda h,c: h.on_round_over_team_scores(c.team_scores))
+
   def _dispatch_event(self, client, seq, command):
-    if isinstance(command, commands.PlayerOnAuthenticated):
+    dispatch = self._events.get(type(command), None)
+    if dispatch is not None:
       for handler in self._handlers:
-        gevent.spawn(lambda h,c: h.on_player_authenticated(c.name), handler, command)
-    elif isinstance(command, commands.PlayerOnJoin):
-      for handler in self._handlers:
-        gevent.spawn(lambda h,c: h.on_player_join(c.name, c.guid), handler, command)
-    elif isinstance(command, commands.PlayerOnLeave):
-      for handler in self._handlers:
-        gevent.spawn(lambda h,c: h.on_player_leave(c.name, c.info), handler, command)
-    elif isinstance(command, commands.PlayerOnSpawn):
-      for handler in self._handlers:
-        gevent.spawn(lambda h,c: h.on_player_spawn(c.name, c.team), handler, command)
-    elif isinstance(command, commands.PlayerOnKill):
-      for handler in self._handlers:
-        gevent.spawn(lambda h,c: h.on_player_kill(c.killer, c.killed, c.weapon, c.headshot), handler, command)
-    elif isinstance(command, commands.PlayerOnChat):
-      for handler in self._handlers:
-        gevent.spawn(lambda h,c: h.on_player_chat(c.name, c.text), handler, command)
-    elif isinstance(command, commands.PlayerOnSquadChange):
-      for handler in self._handlers:
-        gevent.spawn(lambda h,c: h.on_player_squad_change(c.name, c.team, c.squad), handler, command)
-    elif isinstance(command, commands.PlayerOnTeamChange):
-      for handler in self._handlers:
-        gevent.spawn(lambda h,c: h.on_player_team_change(c.name, c.team, c.squad), handler, command)
-    elif isinstance(command, commands.PunkBusterOnMessage):
-      for handler in self._handlers:
-        gevent.spawn(lambda h,c: h.on_punkbuster_message(c.message), handler, command)
-    elif isinstance(command, commands.ServerOnLevelLoaded):
-      for handler in self._handlers:
-        gevent.spawn(lambda h,c: h.on_level_loaded(c.name, c.gamemode, c.rounds_played, c.rounds_total), handler, command)
-    elif isinstance(command, commands.ServerOnRoundOver):
-      for handler in self._handlers:
-        gevent.spawn(lambda h,c: h.on_round_over(c.winning_team), handler, command)
-    elif isinstance(command, commands.ServerOnRoundOverPlayers):
-      for handler in self._handlers:
-        gevent.spawn(lambda h,c: h.on_round_over_players(c.players), handler, command)
-    elif isinstance(command, commands.ServerOnRoundOverTeamScores):
-      for handler in self._handlers:
-        gevent.spawn(lambda h,c: h.on_round_over_team_scores(c.team_scores), handler, command)
-
-  def _respondToLoadedMapList(self):
-    self._mapListLoaded = True
-
-  def _loadMapList(self):
-    assert self._hasClient()
-    assert self._isLoggedIn()
-    msg = commands.MapListLoad()
-    rv = self._client.send(msg)
-    rv.rawlink(lambda d: self._respondToLoadedMapList())
+        gevent.spawn(dispatch, handler, command)
+    else:
+      log.debug("Unknown event: %s" % command)
 
   def _enable_events(self):
-    assert self._hasClient()
-    assert self._isLoggedIn()
+    assert self._is_logged_in()
     msg = commands.AdminEventsEnabled(enable=True)
     rv = self._client.send(msg)
     rv.get()
@@ -104,107 +135,9 @@ class BFServer(object):
   def add_event_handler(self, handler):
     self._handlers.append(handler)
 
-  def info(self):
-    assert self._client is not None
-    serverInfo = commands.ServerInfo()
-    inner_rv = self._client.send(serverInfo)
-    rv = event.AsyncResult()
-    gevent.spawn(lambda: inner_rv.get().to_dict()).link(rv)
-    return rv
-
-  def version(self):
-    assert self._client is not None
-    version = commands.Version()
-    resp = self._client.send(version)
-    return resp
-
-  def nextRound(self):
-    cmd = commands.MapListRunNextRound()
-    return self._client.send(cmd)
-
-  def restartRound(self):
-    cmd = commands.MapListRestartRound()
-    return self._client.send(cmd)
-
-  def listMaps(self):
-    assert self._isLoggedIn()
-    cmd = commands.MapListList()
-    inner_rv = self._client.send(cmd)
-    rv = event.AsyncResult()
-    gevent.spawn(lambda r: map(lambda i: [i.name, i.gamemode, i.rounds], r.get()), inner_rv).link(rv)
-    return rv
-
-  def getMapIndices(self):
-    assert self._isLoggedIn()
-    cmd = commands.MapListGetMapIndices()
-    return self._client.send(cmd)
-
-  def addMap(self, name, gamemode, rounds):
-    assert self._isLoggedIn()
-    cmd = commands.MapListAdd(map_name=name, gamemode=gamemode, rounds=rounds)
-    rv = self._client.send(cmd)
-    return rv
-
-  def setNextMap(self, index):
-    assert self._isLoggedIn()
-    cmd = commands.MapListSetNextMapIndex(index=index)
-    rv = self._client.send(cmd)
-    return rv
-
-  def clearMapList(self):
-    assert self._isLoggedIn()
-    cmd = commands.MapListClear()
-    rv = self._client.send(cmd)
-    return rv
-
-  def saveMapList(self):
-    assert self._isLoggedIn()
-    cmd = commands.MapListSave()
-    rv = self._client.send(cmd)
-    return rv
-
-  def removeMap(self, index):
-    assert self._isLoggedIn()
-    cmd = commands.MapListRemove(index=index)
-    rv = self._client.send(cmd)
-    return rv
-
-  def listPlayers(self):
-    assert self._isLoggedIn()
-    cmd = commands.AdminListPlayers(scope="all")
-    innerrv = self._client.send(cmd)
-    rv = event.AsyncResult()
-    gevent.spawn(lambda r: r.get().to_dict(), innerrv).link(rv)
-    return rv
-
-  def kickPlayer(self, playerName, reason=None):
-    assert self._isLoggedIn()
-    cmd = commands.AdminKickPlayer(playerName, reason)
-    rv = self._client.send(cmd)
-    return rv
-
-  def killPlayer(self, playerName):
-    assert self._isLoggedIn()
-    cmd = commands.AdminKillPlayer(playerName)
-    rv = self._client.send(cmd)
-    return rv
-
-  def listBans(self):
-    assert self._isLoggedIn()
-    cmd = commands.BanListList()
-    struct_rv = self._client.send(cmd)
-    rv = event.AsyncResult()
-    gevent.spawn(lambda r: [[b.id, b.idType, b.banType, b.time, b.reason] for b in r.get()], struct_rv).link(rv)
-    return rv
-
-  def say_all(self, msg):
-    assert self._isLoggedIn()
-    cmd = commands.AdminSay(scope="all", message=msg)
-    rv = self._client.send(cmd)
-    return rv
-
   def list_variables(self):
-    assert self._isLoggedIn()
+    #TODO: Define variables here to decouple from frostbite.
+    assert self._is_logged_in()
     outer_rv = event.AsyncResult()
     rvs = []
     for var_type in commands.variable_types.values():
@@ -218,13 +151,13 @@ class BFServer(object):
     return outer_rv
 
   def set_variable(self, key, val):
-    assert self._isLoggedIn()
+    assert self._is_logged_in()
     variable = commands.variable_types[key](value=val)
     rv = self._client.send(variable)
     return rv
 
   def get_variable(self, key):
-    assert self._isLoggedIn()
+    assert self._is_logged_in()
     variable = commands.variable_types[key]()
     rv = self._client.send(variable)
     return rv

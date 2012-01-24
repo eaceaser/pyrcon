@@ -13,13 +13,13 @@ class Control(object):
   def getServer(self):
     return self.server
 
-  def knownMaps(self):
+  def known_maps(self):
     rv = event.AsyncResult()
     data = self._mapData
     rv.set(data)
     return rv
 
-  def listTeams(self):
+  def list_teams(self):
     rv = event.AsyncResult()
     infoRv = self.server.info()
     gevent.spawn(lambda i: self._modeData[i.get()["gameMode"]]["teams"], infoRv).link(rv)

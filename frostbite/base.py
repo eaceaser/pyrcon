@@ -9,6 +9,14 @@ import frostbite.commands
 
 logger = logging.getLogger("FBBase")
 class FBBase(object):
+  """Represents the base implementation of a frostbite communication class.
+
+  Arguments:
+
+  * ``socket``: GEvent socket.
+  * ``command_handler``: Callback that gets passed a command when received off of the socket.
+  * ``event_handler``: Callback that gets passed an event when received off of the socket.
+  """
   def __init__(self, socket, command_handler, event_handler):
     self.seq = 0
     self._command_handler = command_handler
@@ -83,6 +91,11 @@ class FBBase(object):
       logger.err("Message received for an unknown sequence: %s", (packet.seqNumber))
 
   def _handle_command(self, packet):
+    """Handle a packet that is a command directive.
+
+    Arguments:
+    - packet: A Frostbite message packet.
+    """
     method = packet.words[0]
 
     generator = frostbite.commands.message_generators.get(method, None)
@@ -102,10 +115,12 @@ class FBBase(object):
       logger.debug("Unknown message: %s" % packet)
 
   def stop(self):
+    """Stops the protocol's async processing units."""
     self._group.kill()
     if self._socket is not None:
       self._socket.close()
       self._socket = None
 
   def join(self):
+    """Joins to the protocol's async processing units."""
     self._group.join()

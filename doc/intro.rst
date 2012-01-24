@@ -90,7 +90,7 @@ An example of the client usage:
 The client has full readline support, including command history and tab completion.
 
 General Roadmap
--------
+---------------
 * Finish pyrconc client
 * Finish documentation.
 * Add unit testing.

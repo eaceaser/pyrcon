@@ -3,9 +3,19 @@ import struct
 HEADER_LENGTH = 12
 
 class Packet(object):
+  """Represents a deserialized Frostbite RCon protocol Packet."""
+
   processSize = HEADER_LENGTH
+  """The minimum size of a byte array before it is eligible to be parsed into a Packet."""
 
   def __init__(self, originatedFromServer, isResponse, seqNumber, words):
+    """Initializes a Packet.
+
+    * originatedFromServer: Boolean, Indicates the message originated at the server.
+    * isResponse: Boolean, Indicates that the message is in response to another.
+    * seqNumber: ``Int``, Sequence number for message multiplexing.
+    * words: ``strarray`` List of words that make up the message.
+    """
     self.originatedFromServer = originatedFromServer
     self.isResponse = isResponse
     self.seqNumber = seqNumber
@@ -15,6 +25,7 @@ class Packet(object):
     return "<Packet: originatedFromServer=%s isResponse=%s seqNumber=%i words=%s>" % (self.originatedFromServer, self.isResponse, self.seqNumber, self.words)
 
   def encode(self):
+    """Encodes a packet into a byte string suitable for sending to a Frostbite server."""
     header = self.seqNumber & 0x3fffffff
     if self.originatedFromServer: header += 0x80000000
     if self.isResponse: header += 0x40000000
@@ -32,6 +43,12 @@ class Packet(object):
 
   @staticmethod
   def decode(buf):
+    """Alternative constructor for a Packet structure.
+
+    Takes a byte string of an encoded Frostbite server message, and returns a tuple of (packet, unused)
+    where packet is the decoded packet, and unused is the unused bytes from the original buffer.
+    """
+
     if len(buf) < HEADER_LENGTH: return
     packet_data = buf[:HEADER_LENGTH]
     (header, size, num_words) = struct.unpack("<III", packet_data)

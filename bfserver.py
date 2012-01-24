@@ -141,13 +141,13 @@ class BFServer(object):
 
   def addMap(self, name, gamemode, rounds):
     assert self._isLoggedIn()
-    cmd = commands.MapListAdd(name, gamemode, rounds)
+    cmd = commands.MapListAdd(map_name=name, gamemode=gamemode, rounds=rounds)
     rv = self._client.send(cmd)
     return rv
 
   def setNextMap(self, index):
     assert self._isLoggedIn()
-    cmd = commands.MapListSetNextMapIndex(index)
+    cmd = commands.MapListSetNextMapIndex(index=index)
     rv = self._client.send(cmd)
     return rv
 
@@ -165,7 +165,7 @@ class BFServer(object):
 
   def removeMap(self, index):
     assert self._isLoggedIn()
-    cmd = commands.MapListRemove(index)
+    cmd = commands.MapListRemove(index=index)
     rv = self._client.send(cmd)
     return rv
 
@@ -199,7 +199,7 @@ class BFServer(object):
 
   def say_all(self, msg):
     assert self._isLoggedIn()
-    cmd = commands.AdminSay(msg)
+    cmd = commands.AdminSay(scope="all", message=msg)
     rv = self._client.send(cmd)
     return rv
 
@@ -219,7 +219,7 @@ class BFServer(object):
 
   def set_variable(self, key, val):
     assert self._isLoggedIn()
-    variable = commands.variable_types[key](val)
+    variable = commands.variable_types[key](value=val)
     rv = self._client.send(variable)
     return rv
 

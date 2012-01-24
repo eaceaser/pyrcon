@@ -222,6 +222,13 @@ class SimpleJsonClient(object):
     return rv
 
 class Context(object):
+  def __init__(self):
+    self.set_completer()
+
+  def set_completer(self):
+    readline.set_completer(lambda t,n: [s for s in self._parsers
+                                        if s.startswith(t)][n])
+
   def help(self, cmd=None):
     if cmd is None:
       for i in self._parsers:
@@ -288,6 +295,8 @@ class RootContext(Context):
       'teams': teams,
       'vars': vars
     }
+
+    Context.__init__(self)
 
   def _serverInfo(self, args):
     rv = self._client.getServerInfo()
@@ -372,6 +381,8 @@ class MapsContext(Context):
       'save': save
      }
 
+    Context.__init__(self)
+
   def _maplist(self, args):
     rv = self._client.listMaps()
     l = rv.get()
@@ -434,6 +445,8 @@ class PlayerContext(Context):
       'kill': kill
     }
 
+    Context.__init__(self)
+
   def _list(self, args):
     rv = self._client.listPlayers()
     return rv.get()
@@ -459,6 +472,8 @@ class BanContext(Context):
       'list': list
     }
 
+    Context.__init__(self)
+
   def _list(self, args):
     rv = self._client.listBans()
     bans = rv.get()
@@ -482,6 +497,8 @@ class VarsContext(Context):
       'set': set,
       'list': list
     }
+
+    Context.__init__(self)
 
   def _list(self, args):
     rv = self._client.listVars()
@@ -521,6 +538,7 @@ class Console(Greenlet):
           currentContext.help()
       elif cmd == "..":
         self._contexts.pop()
+        self._contexts[-1].set_completer()
       else:
         rv = currentContext.execute(cmd, args)
         if type(rv) == str or type(rv) == unicode:
@@ -537,6 +555,7 @@ args = parser.parse_args()
 client = SimpleJsonClient(args.host, args.port, args.password)
 client.start()
 histfile = os.path.join(os.path.expanduser("~"), ".pyrconchist")
+readline.parse_and_bind("tab: complete")
 try:
   readline.read_history_file(histfile)
 except IOError:

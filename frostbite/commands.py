@@ -2,7 +2,17 @@ from frostbite.packet import Packet
 from frostbite.serverstructs import ServerState, Map, PlayerCollection, Ban
 
 class FrostbiteMessage(object):
+  """
+  Base class for a Frostbite message structure.
+  """
+
   def toPacket(self, seq):
+    """
+    Returns a packet structure that encapsulates the message.
+
+    :param seq: Sequence number for the packet.
+    :return: :mod:`frostbite.packet`
+    """
     return Packet(False, False, seq, self.words)
 
   response = lambda self,p,c: " ".join(p.words)
@@ -14,6 +24,13 @@ class FrostbiteEvent(FrostbiteMessage):
   pass
 
 class ResponsePacket(FrostbiteMessage):
+  """
+  Frostbite message that describes a response to another message.
+
+  :param response_code: String response code for the message
+  :param words: Response words for the message
+  """
+
   def __init__(self, response_code, *words):
     self.words = [response_code]
     self.words.extend(words)
@@ -40,11 +57,14 @@ def _packet_to_camel_case(packet_name):
   class_name = "".join(new_parts)
   return class_name
 
-def define_message_type(packet_name, args = [], validate_args=None, dict=None, response=None, generator=None, base=FrostbiteMessage):
+def define_message_type(packet_name, args = [], validate_args=None, dict=None, response=None, generator=None, base=FrostbiteMessage, doc=None):
   class_name = _packet_to_camel_case(packet_name)
   type_dict = {}
   if dict is not None:
     type_dict.update(dict)
+
+  if doc is not None:
+    type_dict["__doc__"] = doc
 
   if response is not None:
     type_dict['response'] = response
@@ -83,8 +103,8 @@ def define_message_type(packet_name, args = [], validate_args=None, dict=None, r
   message_generators[packet_name] = generator_func
   globals()[class_name] = rv
 
-def define_event_type(packet_name, args = [], validate_args=None, dict=None, response=None, generator=None):
-  rv = define_message_type(packet_name, args, validate_args, dict, response, generator, base=FrostbiteEvent)
+def define_event_type(packet_name, args = [], validate_args=None, dict=None, response=None, generator=None, doc=None):
+  rv = define_message_type(packet_name, args, validate_args, dict, response, generator, base=FrostbiteEvent, doc=doc)
   event_types[packet_name] = rv
   event_generators[packet_name] = message_generators[packet_name]
   return rv
@@ -186,61 +206,61 @@ def _list_players_generator(packet):
   else:
     raise Exception
 
-define_message_type("version", response=lambda s,p,c: " ".join(p.words[1:]))
-define_message_type("serverInfo", response=lambda s,p,c:ServerState.from_packet_array(p.words[1:]))
-define_message_type("login.hashed", args=["password"], response=lambda s,p,c: p.words[1] if len(p.words) > 1 else p.words[0])
-define_event_type("player.onAuthenticated", args=["name"])
-define_event_type("player.onJoin", args=["name", "guid"])
-define_event_type("player.onLeave", args=["name", "info"])
-define_event_type("player.onSpawn", args=["name", "team"])
-define_event_type("player.onKill", args=["killer", "killed", "weapon", "headshot"])
-define_event_type("player.onChat", args=["name", "text"])
-define_event_type("player.onSquadChange", args=["name", "team", "squad"])
-define_event_type("player.onTeamChange", args=["name", "team", "squad"])
-define_event_type("punkBuster.onMessage", args=["message"])
-define_event_type("server.onLevelLoaded", args=["name", "gamemode", "rounds_played", "rounds_total"])
-define_event_type("server.onRoundOver", args=["winning_team"])
-define_event_type("server.onRoundOverPlayers", args=["players"])
-define_event_type("server.onRoundOverTeamScores", args=["team_scores"])
-define_message_type("admin.eventsEnabled", args=["enable"])
-define_message_type("admin.say", args=["message", "scope", "team", "squad", "player"], validate_args=_validate_say_args)
-define_message_type("admin.listPlayers", args=["scope", "team"], response=_parse_players_list, validate_args=_validate_list_players, generator=_list_players_generator)
-define_message_type("logout")
-define_message_type("quit")
-define_message_type("punkBuster.isActive")
-define_message_type("punkBuster.activate")
-define_message_type("punkBuster.pb_sv_command", args=["command"])
-define_message_type("admin.kickPlayer", args=["player_name", "reason"])
-define_message_type("admin.movePlayer", args=["player_name", "team_id", "squad_id", "force_kill"])
-define_message_type("admin.killPlayer", args=["player_name"])
-define_message_type("gameAdmin.load")
-define_message_type("gameAdmin.save")
-define_message_type("gameAdmin.add", args=["player", "level"])
-define_message_type("gameAdmin.remove", args=["player"])
-define_message_type("gameAdmin.list")
-define_message_type("banList.load")
-define_message_type("banList.save")
-define_message_type("banList.add", args=["id_type", "id", "timeout", "reason"])
-define_message_type("banList.remove", args=["id_type", "id"])
-define_message_type("banList.clear")
-define_message_type("banList.list", args=["offset"], response=_parse_ban_list)
-define_message_type("reservedSlotsList.load")
-define_message_type("reservedSlotsList.save")
-define_message_type("reservedSlotsList.add", args=["name"])
-define_message_type("reservedSlotsList.remove", args=["name"])
-define_message_type("reservedSlotsList.clear")
-define_message_type("reservedSlotsList.list")
-define_message_type("mapList.load")
-define_message_type("mapList.save")
-define_message_type("mapList.add", args=["map_name", "gamemode", "rounds", "index"])
-define_message_type("mapList.remove", args=["index"])
-define_message_type("mapList.clear")
-define_message_type("mapList.list", response=_parse_map_list)
-define_message_type("mapList.setNextMapIndex", args=["index"])
-define_message_type("mapList.getMapIndices", response=lambda s,p,c: [p.words[1], p.words[2]])
-define_message_type("mapList.runNextRound")
-define_message_type("mapList.restartRound")
-define_message_type("mapList.endRound", args=["winning_team"])
+define_message_type("version", response=lambda s,p,c: " ".join(p.words[1:]), doc="Asks for the server's version.")
+define_message_type("serverInfo", response=lambda s,p,c:ServerState.from_packet_array(p.words[1:]), doc="Asks for basic info from the server.")
+define_message_type("login.hashed", args=["password"], response=lambda s,p,c: p.words[1] if len(p.words) > 1 else p.words[0], doc="Begins or ends a hashed login sequence.")
+define_event_type("player.onAuthenticated", args=["name"], doc="Event raised when a player authenticates to the server.")
+define_event_type("player.onJoin", args=["name", "guid"], doc="Event raised when a player joins the server.")
+define_event_type("player.onLeave", args=["name", "info"], doc="Event raised when a player leaves the server.")
+define_event_type("player.onSpawn", args=["name", "team"], doc="Event raised when a player spawns.")
+define_event_type("player.onKill", args=["killer", "killed", "weapon", "headshot"], doc="Event raised when a player is killed.")
+define_event_type("player.onChat", args=["name", "text"], doc="Event raised when a player or the server sends a message.")
+define_event_type("player.onSquadChange", args=["name", "team", "squad"], doc="Event raised when a player changes squads.")
+define_event_type("player.onTeamChange", args=["name", "team", "squad"], doc="Event raised when a player changes teams.")
+define_event_type("punkBuster.onMessage", args=["message"], doc="Event raised when PunkBuster emits a message.")
+define_event_type("server.onLevelLoaded", args=["name", "gamemode", "rounds_played", "rounds_total"], doc="Event raised when the server loads a new level.")
+define_event_type("server.onRoundOver", args=["winning_team"], doc="Event raised when the server ends a round.")
+define_event_type("server.onRoundOverPlayers", args=["players"], doc="Event raised when the server ends a round, containing player info.")
+define_event_type("server.onRoundOverTeamScores", args=["team_scores"], doc="Event raised when the server ends a round, containing team scores.")
+define_message_type("admin.eventsEnabled", args=["enable"], doc="Asks the server to begin sending events.")
+define_message_type("admin.say", args=["message", "scope", "team", "squad", "player"], validate_args=_validate_say_args, doc="Write a message to the in game chat.")
+define_message_type("admin.listPlayers", args=["scope", "team"], response=_parse_players_list, validate_args=_validate_list_players, generator=_list_players_generator, doc="List current players.")
+define_message_type("logout", doc="Logout from the server's RCon")
+define_message_type("quit", doc="Quit from the server.")
+define_message_type("punkBuster.isActive", doc="Asks the server if punkbuster is active.")
+define_message_type("punkBuster.activate", doc="Asks the server to activate punkbuster.")
+define_message_type("punkBuster.pb_sv_command", args=["command"], doc="Asks the server to relay a command to punkbuster.")
+define_message_type("admin.kickPlayer", args=["player_name", "reason"], doc="Ask the server to kick a player.")
+define_message_type("admin.movePlayer", args=["player_name", "team_id", "squad_id", "force_kill"], doc="Asks the server to move a player.")
+define_message_type("admin.killPlayer", args=["player_name"], doc="Asks the server to kill a player.")
+define_message_type("gameAdmin.load", doc="Asks the server to load the admin list from disk.")
+define_message_type("gameAdmin.save", doc="Asks the server to save the admin list to disk.")
+define_message_type("gameAdmin.add", args=["player", "level"], doc="Add a player to the admin list.")
+define_message_type("gameAdmin.remove", args=["player"], doc="Asks th server to remove a player from the admin list.")
+define_message_type("gameAdmin.list", doc="Asks the server to list the known admins.")
+define_message_type("banList.load", doc="Asks the server to load the ban list from disk.")
+define_message_type("banList.save", doc="Asks the server to save the ban list from disk.")
+define_message_type("banList.add", args=["id_type", "id", "timeout", "reason"], doc="Asks the server to add someone to the ban list.")
+define_message_type("banList.remove", args=["id_type", "id"], doc="Asks the server to remove someone from the ban list.")
+define_message_type("banList.clear", doc="Asks the server to clear the banlist.")
+define_message_type("banList.list", args=["offset"], response=_parse_ban_list, doc="Asks the server for the ban list.")
+define_message_type("reservedSlotsList.load", doc="Asks the server to load the reserved slots list from disk.")
+define_message_type("reservedSlotsList.save", doc="Asks the server to save the reserved slots list to disk.")
+define_message_type("reservedSlotsList.add", args=["name"], doc="Asks the server to add someone to the reserved slots list.")
+define_message_type("reservedSlotsList.remove", args=["name"], doc="Asks the server to remove someone from the reserved slots list.")
+define_message_type("reservedSlotsList.clear", doc="Clears the reserved slotslist.")
+define_message_type("reservedSlotsList.list", doc="Asks the server to list the reserved slots.")
+define_message_type("mapList.load", doc="Asks the server to load the map list from disk.")
+define_message_type("mapList.save", doc="Asks the server to save the map list to disk.")
+define_message_type("mapList.add", args=["map_name", "gamemode", "rounds", "index"], doc="Asks the server to add a map to the map list.")
+define_message_type("mapList.remove", args=["index"], doc="Asks the server to delete a map from the map list.")
+define_message_type("mapList.clear", doc="Asks the server to clear the map list.")
+define_message_type("mapList.list", response=_parse_map_list, doc="Asks the server to list the map list.")
+define_message_type("mapList.setNextMapIndex", args=["index"], doc="Asks the server to set the next map to the specified index in the map list.")
+define_message_type("mapList.getMapIndices", response=lambda s,p,c: [p.words[1], p.words[2]], doc="Asks the server for the current and next map indices")
+define_message_type("mapList.runNextRound", doc="Asks the server to run the next round immediately.")
+define_message_type("mapList.restartRound", doc="Asks the server to restart the round immediately.")
+define_message_type("mapList.endRound", args=["winning_team"], doc="Asks the server to end the current round immediately.")
 
 define_variable_type("vars.ranked")
 define_variable_type("vars.serverName")

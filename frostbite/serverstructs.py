@@ -23,6 +23,9 @@ class OpenStruct(object):
     return self.__dict__
 
 class ServerState(object):
+  """
+  Structure representing the basic state of a BF3 server.
+  """
   def __init__(self, server_name, player_count, max_players, game_mode,
                map_name, current_round, total_rounds, num_teams, team_scores,
                target_scores, online_state, is_ranked, has_punkbuster, has_password,
@@ -52,6 +55,10 @@ class ServerState(object):
     self.country = country
 
   def to_dict(self):
+    """
+    Helper method that returns a python dictionary containing the information in this structure.
+    """
+
     rv = {
       'server_name': self.server_name,
       'player_count': self.player_count,
@@ -80,6 +87,10 @@ class ServerState(object):
 
   @staticmethod
   def from_dict(d):
+    """
+    Alternative constructor that returns a ServerState structure from a python dictionary.
+    """
+
     rv = ServerState(
       d["server_name"], d["player_count"], d["max_players"], d["game_mode"],
       d["map_name"], d["current_round"], d["total_rounds"], d["num_teams"],
@@ -91,6 +102,10 @@ class ServerState(object):
     return rv
 
   def to_packet_array(self):
+    """
+    Helper method that returns an array of words suitable for encoding in a Frostbite packet.
+    """
+
     rv = [self.server_name, str(self.player_count), str(self.max_players),
           self.game_mode, self.map_name, str(self.current_round),
           str(self.total_rounds), str(self.num_teams)]
@@ -106,6 +121,10 @@ class ServerState(object):
 
   @staticmethod
   def from_packet_array(a):
+    """
+    Alternative constructor that returns a ServerState structure from a list of words from a
+    Frostbite packet.
+    """
     serverName = a[0]
     playerCount = int(a[1])
     maxPlayers = int(a[2])
@@ -138,6 +157,13 @@ class ServerState(object):
                        pingSite, country)
 
 class PlayerCollection(object):
+  """
+  Represents a collection of players and information about them. Due to the way the frostbite protocol currently
+  sends this info, it also provides a list of field names that are sent alongside the player list.
+
+  :param names: Array containing the field names
+  :param players: Array of arrays of players' info blocks.
+  """
   def __init__(self, names, players):
     self._names = names
     self._players = players
@@ -155,19 +181,53 @@ class PlayerCollection(object):
     return len(self._players)
 
   def get_field_names(self):
+    """
+    Return the list of field names.
+
+    :return: Array of field names.
+
+    """
     return self._names
 
   def players(self):
+    """
+    Return the list of players' info blocks.
+
+    :return: Array of arrays containing players' info blocks
+
+    """
     return self._players
 
   @staticmethod
   def from_dict(dict):
+    """
+    Transforms a python dictionary of the form
+    `{"fields": [field_names], "players": [[player_info_block1, player_info_block2]]}`
+    into a player collection.
+
+    :param dict: Dictionary
+    :return: PlayerCollection
+
+    """
     return PlayerCollection(dict["fields"], dict["players"])
 
   def to_dict(self):
+    """
+    Returns a python dictionary of the form
+    `{"fields": [field_names], "players": [[player_info_block1, player_info_block2]]}`
+
+    :return: dictionary
+
+    """
     return { "fields": self.get_field_names(), "players": self.players() }
 
   def to_packet_array(self):
+    """
+    Helper method to return an array of words suitable for encoding this PlayerCollection into a packet.
+
+    :return: list of words.
+
+    """
     rv = [str(len(self._names))]
     rv.extend(self._names)
     rv.append(str(len(self._players)))
@@ -177,6 +237,13 @@ class PlayerCollection(object):
 
   @staticmethod
   def from_packet_array(a):
+    """
+    Alternative constructor to return a PlayerCollection from a list of words from a packet.
+
+    :param a: Array of words from a packet returning a player info block.
+    :return: PlayerCollection
+
+    """
     num_names = int(a[0])
     field_names = a[1:1+num_names]
     num_players = int(a[1+num_names])

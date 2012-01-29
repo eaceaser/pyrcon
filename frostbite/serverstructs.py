@@ -258,5 +258,56 @@ class PlayerCollection(object):
 class Ban(OpenStruct):
   pass
 
-class Map(OpenStruct):
-  pass
+class Map(object):
+  def __init__(self, name, mode, num_rounds):
+    self.name = name
+    self.mode = mode
+    self.num_rounds = num_rounds
+
+  def to_dict(self):
+    return {'name': self.name, 'mode': self.mode, 'num_rounds': self.num_rounds}
+
+  @staticmethod
+  def from_dict(d):
+    return Map(d['name'], d['mode'], d['num_rounds'])
+
+  def to_packet_array(self):
+    return [self.name, self.mode, self.num_rounds]
+
+  def __len__(self):
+    return 3
+
+class MapList(object):
+  def __init__(self, maps):
+    self.maps = maps
+
+  def to_dict(self):
+    return {'maps': [map.to_dict() for map in self.maps]}
+
+  @staticmethod
+  def from_dict(d):
+    return MapList([Map.from_dict(map) for map in d["maps"]])
+
+  def to_packet_array(self):
+    # assume that all maps  have the same # of args for now
+    rv = [len(self.maps), len(self.maps[0])]
+    for map in self.maps:
+      rv.extend(map.to_packet_array())
+
+    return rv
+
+  @staticmethod
+  def from_packet_array(a):
+    num_maps = int(a[0])
+    words_per_map = int(a[1])
+    rv = []
+    for i in range(num_maps):
+      pos = 2+(i*words_per_map)
+      slice = a[pos:pos+words_per_map]
+      name = slice[0]
+      mode = slice[1]
+      num_rounds = slice[2]
+      rv.append(Map(name, mode, num_rounds))
+
+    return MapList(rv)
+

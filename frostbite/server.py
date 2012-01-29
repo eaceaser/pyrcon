@@ -15,6 +15,7 @@ class FBServer(FBBase):
   """
   def __init__(self, socket, address, command_handler, event_handler):
     FBBase.__init__(self, socket, command_handler, event_handler)
+    self.events_enabled = False
 
   def start(self):
     """

@@ -45,16 +45,16 @@ class BFServer(object):
     self._client.start()
 
   def _define_method_wrapper(self, method_name, message_type, arg_names=[], defaults={}, out=None, assertion=None):
-    def method(s=self, *args):
+    def method(*args):
       if assertion is not None:
         assertion()
 
       kwargs = {}
+      for key in defaults:
+        kwargs[key] = defaults[key]
       if arg_names is not None:
         for name, arg in map(None, arg_names, args):
           kwargs[name] = arg
-      for key in defaults:
-        kwargs[key] = defaults[key]
 
       msg = message_type(**kwargs)
       msg_rv = self._client.send(msg)
@@ -72,8 +72,9 @@ class BFServer(object):
     d("version", commands.Version, assertion=self._has_client)
     d("next_round", commands.MapListRunNextRound, assertion=self._is_logged_in)
     d("restart_round", commands.MapListRestartRound, assertion=self._is_logged_in)
+    d("end_round", commands.MapListEndRound, ["winning_team"], assertion=self._is_logged_in)
     d("info", commands.ServerInfo, out=lambda r:r.get().to_dict(), assertion=self._has_client)
-    d("list_maps", commands.MapListList, out=lambda r:[[i.name, i.gamemode, i.rounds] for i in r.get()], assertion=self._is_logged_in)
+    d("list_maps", commands.MapListList, out=lambda r:r.get().to_dict(), assertion=self._is_logged_in)
     d("get_map_indices", commands.MapListGetMapIndices, assertion=self._is_logged_in)
     d("add_map", commands.MapListAdd, ["name", "gamemode", "rounds"], assertion=self._is_logged_in)
     d("set_next_map", commands.MapListSetNextMapIndex, ["index"], assertion=self._is_logged_in)
@@ -85,6 +86,7 @@ class BFServer(object):
     d("kill_player", commands.AdminKillPlayer, ["player_name"], assertion=self._is_logged_in)
     d("list_bans", commands.BanListList, assertion=self._is_logged_in)
     d("say_all", commands.AdminSay, ["message"], defaults={"scope":"all"}, assertion=self._is_logged_in)
+    d("list_players", commands.AdminListPlayers, defaults={"scope":"all"}, out=lambda l:l.get().to_dict(), assertion=self._is_logged_in)
 
   def _define_event_dispatch(self, message, dispatch):
     self._events[message] = dispatch
@@ -161,3 +163,6 @@ class BFServer(object):
     variable = commands.variable_types[key]()
     rv = self._client.send(variable)
     return rv
+
+  def say(self, message):
+    return self.say_all(message)

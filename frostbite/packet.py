@@ -49,12 +49,16 @@ class Packet(object):
     where packet is the decoded packet, and unused is the unused bytes from the original buffer.
     """
 
-    if len(buf) < HEADER_LENGTH: return
+    if len(buf) < HEADER_LENGTH:
+      return (None, buf)
     packet_data = buf[:HEADER_LENGTH]
     (header, size, num_words) = struct.unpack("<III", packet_data)
     originated_from_server = (header & 0x80000000) != 0
     is_response = (header & 0x40000000) != 0
     seq_num = header & 0x3fffffff
+
+    if len(buf) < size:
+      return (None, buf)
 
     data,rest = buf[HEADER_LENGTH:size],buf[size:]
     pos = 0

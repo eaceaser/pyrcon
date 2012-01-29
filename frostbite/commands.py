@@ -1,5 +1,5 @@
 from frostbite.packet import Packet
-from frostbite.serverstructs import ServerState, Map, PlayerCollection, Ban
+from frostbite.serverstructs import ServerState, MapList, PlayerCollection, Ban
 
 class FrostbiteMessage(object):
   """
@@ -180,21 +180,16 @@ def _parse_ban_list(self, packet, client):
       pos += 5
   return bans
 
-def _parse_map_list(self, packet, client):
-  numMaps = int(packet.words[1])
-  wordsPerMap = int(packet.words[2])
-  pos = 3
-  maps = []
-  for i in range(numMaps):
-    mapslice = packet.words[pos:pos+wordsPerMap]
-    pos += wordsPerMap
-    map = Map()
-    map.name = mapslice[0]
-    map.gamemode = mapslice[1]
-    map.rounds = mapslice[2]
-    maps.append(map)
-
-  return maps
+def _say_generator(packet):
+  message = packet.words[1]
+  scope = packet.words[2]
+  if scope == "all":
+    return AdminSay(message=message, scope="all")
+  elif scope == "team":
+    team_id = packet.words[3]
+    return AdminSay(message=message, scope="team", team=team_id)
+  else:
+    raise Exception
 
 def _list_players_generator(packet):
   scope = packet.words[1]
@@ -223,7 +218,7 @@ define_event_type("server.onRoundOver", args=["winning_team"], doc="Event raised
 define_event_type("server.onRoundOverPlayers", args=["players"], doc="Event raised when the server ends a round, containing player info.")
 define_event_type("server.onRoundOverTeamScores", args=["team_scores"], doc="Event raised when the server ends a round, containing team scores.")
 define_message_type("admin.eventsEnabled", args=["enable"], doc="Asks the server to begin sending events.")
-define_message_type("admin.say", args=["message", "scope", "team", "squad", "player"], validate_args=_validate_say_args, doc="Write a message to the in game chat.")
+define_message_type("admin.say", args=["message", "scope", "team", "squad", "player"], validate_args=_validate_say_args, generator=_say_generator, doc="Write a message to the in game chat.")
 define_message_type("admin.listPlayers", args=["scope", "team"], response=_parse_players_list, validate_args=_validate_list_players, generator=_list_players_generator, doc="List current players.")
 define_message_type("logout", doc="Logout from the server's RCon")
 define_message_type("quit", doc="Quit from the server.")
@@ -255,7 +250,7 @@ define_message_type("mapList.save", doc="Asks the server to save the map list to
 define_message_type("mapList.add", args=["map_name", "gamemode", "rounds", "index"], doc="Asks the server to add a map to the map list.")
 define_message_type("mapList.remove", args=["index"], doc="Asks the server to delete a map from the map list.")
 define_message_type("mapList.clear", doc="Asks the server to clear the map list.")
-define_message_type("mapList.list", response=_parse_map_list, doc="Asks the server to list the map list.")
+define_message_type("mapList.list", response=lambda s,p,c: MapList.from_packet_array(p.words[1:]), doc="Asks the server to list the map list.")
 define_message_type("mapList.setNextMapIndex", args=["index"], doc="Asks the server to set the next map to the specified index in the map list.")
 define_message_type("mapList.getMapIndices", response=lambda s,p,c: [p.words[1], p.words[2]], doc="Asks the server for the current and next map indices")
 define_message_type("mapList.runNextRound", doc="Asks the server to run the next round immediately.")

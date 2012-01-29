@@ -18,52 +18,56 @@ try:
 except ImportError:
   from yaml import Loader, Dumper
 
-parser = argparse.ArgumentParser(description="PyRCon - Python Battlefield 3 RCon Manager")
-parser.add_argument('-c', '--config', dest='config', help='Configuration File', required = True)
-parser.add_argument('--mapdata', dest='mapfile', help='Map data file', default='./data/maps.yml')
-parser.add_argument('--modedata', dest='modefile', help='Mode data file', default='./data/modes.yml')
-parser.add_argument('--verbose', '-v', dest='verbose', action='count', help='Verbose logging.')
-args = parser.parse_args()
+def main():
+  parser = argparse.ArgumentParser(description="PyRCon - Python Battlefield 3 RCon Manager")
+  parser.add_argument('-c', '--config', dest='config', help='Configuration File', required = True)
+  parser.add_argument('--mapdata', dest='mapfile', help='Map data file', default='./data/maps.yml')
+  parser.add_argument('--modedata', dest='modefile', help='Mode data file', default='./data/modes.yml')
+  parser.add_argument('--verbose', '-v', dest='verbose', action='count', help='Verbose logging.')
+  args = parser.parse_args()
 
-level = logging.WARNING
-if args.verbose == 1:
-  level = logging.INFO
-elif args.verbose >= 2:
-  level = logging.DEBUG
+  level = logging.WARNING
+  if args.verbose == 1:
+    level = logging.INFO
+  elif args.verbose >= 2:
+    level = logging.DEBUG
 
-logging.basicConfig(level=level)
+  logging.basicConfig(level=level)
 
-logger = logging.getLogger("")
-logger.info("Loading config file.")
-config_file = io.open(args.config, 'r')
-config = load(config_file, Loader=Loader)
-config_file.close()
+  logger = logging.getLogger("")
+  logger.info("Loading config file.")
+  config_file = io.open(args.config, 'r')
+  config = load(config_file, Loader=Loader)
+  config_file.close()
 
-logger.info("Loading maps data.")
-maps_file = io.open(args.mapfile, 'r')
-map_data = load(maps_file, Loader=Loader)
-maps_file.close()
+  logger.info("Loading maps data.")
+  maps_file = io.open(args.mapfile, 'r')
+  map_data = load(maps_file, Loader=Loader)
+  maps_file.close()
 
-logger.info("Loading mode data.")
-mode_file = io.open(args.modefile, 'r')
-mode_data = load(mode_file, Loader=Loader)
-mode_file.close()
+  logger.info("Loading mode data.")
+  mode_file = io.open(args.modefile, 'r')
+  mode_data = load(mode_file, Loader=Loader)
+  mode_file.close()
 
-server_config = config['rcon']
-server = BFServer(server_config["host"], server_config["port"], server_config["password"])
-control = Control(server, config["server"]["password"], map_data, mode_data)
+  server_config = config['rcon']
+  server = BFServer(server_config["host"], server_config["port"], server_config["password"])
+  control = Control(server, config["server"]["password"], map_data, mode_data)
 
-modules_config = config['modules']
-if modules_config is not None:
-  for module_name in modules_config:
-    logger.info("Loading module: %s" % module_name)
-    module_config = modules_config[module_name]
-    i = __import__("modules.%s" % module_name, globals(), locals(), ['module'], -1)
-    module = i.module(control, module_config)
-    control.server.add_event_handler(module)
+  modules_config = config['modules']
+  if modules_config is not None:
+    for module_name in modules_config:
+      logger.info("Loading module: %s" % module_name)
+      module_config = modules_config[module_name]
+      i = __import__("modules.%s" % module_name, globals(), locals(), ['module'], -1)
+      module = i.module(control, module_config)
+      control.server.add_event_handler(module)
 
-simple.simpleServer(control)
-proxy = Proxy(control)
+  simple.simpleServer(control)
+  proxy = Proxy(control)
 
-while True:
-  gevent.sleep(100)
+  while True:
+    gevent.sleep(100)
+
+if __name__=="__main__":
+  main()

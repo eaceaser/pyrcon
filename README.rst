@@ -3,7 +3,7 @@ PyRCon
 
 PyRCon is a Frostbite Engine 2 RCon proxy server that is intended to be a replacement for Procon.
 
-Documentation
+API Documentation
 -------------
 http://eaceaser.github.com/pyrcon
 
@@ -139,11 +139,11 @@ General Roadmap
 -------
 * Finish pyrconc client
 * Finish documentation.
-* Add unit testing.
+* Finish testing.
 * Remove the simple JSON protocol and replace it with a strutured protobuf-driven protocol.
 * Start a separate web frontend project for PyRCon.
 * Rewrite the authentication to support multi-user credentials.
-* Add SSL cert based authentication.
+* Add SSL encryption to remote protocols.
 
 Authors
 -------

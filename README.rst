@@ -131,14 +131,9 @@ The client has full readline support, including command history and tab completi
 Why not Procon?
 ---------------
 
-* Procon is not easy to run crossplatform. It currently relies on having the .NET CLR installed in some form. Most
-non-Windows servers do not have a CLR environment unless they install Mono, which is not a common package on most
-server OS distributions. 
-* Procon is not very lightweight or componentized. It is both a layer server as well as a GUI that includes features 
-such as a map viewer, plugin downloader, etc. I think a more modular architecture where the server is a headless,
-daemonizable process with no UI provides for a more flexible and easier to manage system.
-* Easier Plugin / Module API. Procon handles plugins by using a very strange C# runtime compilation stage, which makes 
-writing and testing plugins very difficult. 
+* Procon is not easy to run crossplatform. It currently relies on having the .NET CLR installed in some form. Most non-Windows servers do not have a CLR environment unless they install Mono, which is not a common package on most server OS distributions. 
+* Procon is not very lightweight or componentized. It is both a layer server as well as a GUI that includes features  such as a map viewer, plugin downloader, etc. I think a more modular architecture where the server is a headless, daemonizable process with no UI provides for a more flexible and easier to manage system.
+* Easier Plugin / Module API. Procon handles plugins by using a very strange C# runtime compilation stage, which makes  writing and testing plugins very difficult. 
 
 General Roadmap
 -------

@@ -468,6 +468,14 @@ class BanContext(Context):
     list = InternalParser("list", add_help=False)
     list.set_defaults(func = self._list)
 
+    add = InternalParser("add", add_help=False)
+    add.add_argument("id_type")
+    add.add_argument("id")
+    add.add_argument("ban_type")
+    add.add_argument("time")
+    add.add_argument("--reason", "-r")
+    add.set_defaults(func = self._add)
+
     self._parsers = {
       'list': list
     }

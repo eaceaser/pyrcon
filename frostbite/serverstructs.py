@@ -1,27 +1,3 @@
-# XXX: Replace with something sane, like actual objects, or protobufs.
-class OpenStruct(object):
-  def __init__(self):
-    self.__dict__ = {}
-
-  def __getattr__(self, i):
-    if i in self.__dict__:
-      return self.__dict__[i]
-    else:
-      raise AttributeError, i
-
-  def __setattr__(self, i, v):
-    if i in self.__dict__:
-      self.__dict__[i] = v
-    else:
-      self.__dict__.update({i:v})
-    return v
-
-  def __str__(self):
-    return "%s" % self.__dict__
-
-  def dict(self):
-    return self.__dict__
-
 class ServerState(object):
   """
   Structure representing the basic state of a BF3 server.
@@ -255,8 +231,37 @@ class PlayerCollection(object):
 
     return PlayerCollection(field_names, players)
 
-class Ban(OpenStruct):
-  pass
+class Ban(object):
+  def __init__(self, id_type, id, ban_type, time, reason):
+    self.id_type = id_type
+    self.id = id
+    self.ban_type = ban_type
+    self.time = time
+    self.reason = reason
+
+  def to_packet_array(self):
+    return [self.id_type, self.id, self.ban_type, self.time, self.reason]
+
+  def to_dict(self):
+    return { 'id_type': self.id_type,
+             'id': self.id,
+             'ban_type': self.ban_type,
+             'time': self.time,
+             'reason': self.reason }
+
+  @staticmethod
+  def from_packet_array(a):
+    return Ban(a[0], a[1], a[2], a[3], a[4])
+
+  @staticmethod
+  def from_dict(d):
+    id_type = d['id_type']
+    id = d['id']
+    ban_type = d['ban_type']
+    time = d['time']
+    reason = d['reason']
+
+    return Ban(id_type, id, ban_type, time, reason)
 
 class Map(object):
   def __init__(self, name, mode, num_rounds):

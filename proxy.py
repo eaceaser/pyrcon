@@ -91,4 +91,3 @@ class ProxyEventHandler(EventHandler):
   def on_player_chat(self, name, text):
     self.server.send(self._seq, frostbite.commands.PlayerOnChat(name=name, text=text))
     self._seq += 1
-

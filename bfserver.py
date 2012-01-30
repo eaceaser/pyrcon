@@ -76,7 +76,7 @@ class BFServer(object):
     d("info", commands.ServerInfo, out=lambda r:r.get().to_dict(), assertion=self._has_client)
     d("list_maps", commands.MapListList, out=lambda r:r.get().to_dict(), assertion=self._is_logged_in)
     d("get_map_indices", commands.MapListGetMapIndices, assertion=self._is_logged_in)
-    d("add_map", commands.MapListAdd, ["name", "gamemode", "rounds"], assertion=self._is_logged_in)
+    d("add_map", commands.MapListAdd, ["map_name", "gamemode", "rounds"], defaults={"index": 0}, assertion=self._is_logged_in)
     d("set_next_map", commands.MapListSetNextMapIndex, ["index"], assertion=self._is_logged_in)
     d("clear_map_list", commands.MapListClear, assertion=self._is_logged_in)
     d("save_map_list", commands.MapListSave, assertion=self._is_logged_in)
@@ -84,9 +84,9 @@ class BFServer(object):
     d("list_all_players", commands.AdminListPlayers, out=lambda r:r.get().to_dict(), defaults={"scope":"all"}, assertion=self._is_logged_in)
     d("kick_player", commands.AdminKickPlayer, ["player_name", "reason"], assertion=self._is_logged_in)
     d("kill_player", commands.AdminKillPlayer, ["player_name"], assertion=self._is_logged_in)
-    d("list_bans", commands.BanListList, assertion=self._is_logged_in)
+    d("add_ban", commands.BanListAdd, ["id_type", "id", "timeout", "reason"], assertion=self._is_logged_in)
+    d("list_bans", commands.BanListList, assertion=self._is_logged_in, out=lambda bl:[b.to_dict() for b in bl.get()])
     d("say_all", commands.AdminSay, ["message"], defaults={"scope":"all"}, assertion=self._is_logged_in)
-    d("list_players", commands.AdminListPlayers, defaults={"scope":"all"}, out=lambda l:l.get().to_dict(), assertion=self._is_logged_in)
 
   def _define_event_dispatch(self, message, dispatch):
     self._events[message] = dispatch

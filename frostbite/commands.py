@@ -167,17 +167,11 @@ def _parse_ban_list(self, packet, client):
   bans = []
   if len(packet.words) > 1:
     num = int(packet.words[1])
-    pos = 2
     for i in range(num):
-      banslice = packet.words[pos:pos+5]
-      ban = Ban()
-      ban.idType = banslice[0]
-      ban.id = banslice[1]
-      ban.banType = banslice[2]
-      ban.time = banslice[3]
-      ban.reason = banslice[4]
+      base = 2+(i*5)
+      banslice = packet.words[base:base+5]
+      ban = Ban.from_packet_array(banslice)
       bans.append(ban)
-      pos += 5
   return bans
 
 def _say_generator(packet):

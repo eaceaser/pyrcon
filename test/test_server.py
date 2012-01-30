@@ -5,7 +5,7 @@ from server import TestServer
 from bfserver import BFServer
 from proxy import Proxy
 
-class ProxyTest(unittest.TestCase):
+class ServerTest(unittest.TestCase):
   server = TestServer()
   client = BFServer("localhost", 28260, "test")
   control = Control(client, "test", None, None)

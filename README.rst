@@ -3,6 +3,13 @@ PyRCon
 
 PyRCon is a Frostbite Engine 2 RCon proxy server that is intended to be a replacement for Procon.
 
+Contact
+-------
+
+``#pyrcon`` on ``irc.freenode.net``
+
+No mailing list... YET.
+
 API Documentation
 -------------
 http://eaceaser.github.com/pyrcon

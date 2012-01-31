@@ -3,7 +3,14 @@ PyRCon
 
 PyRCon is a Frostbite Engine 2 RCon proxy server that is intended to be a replacement for Procon.
 
-Documentation
+Contact
+-------
+
+``#pyrcon`` on ``irc.freenode.net``
+
+No mailing list... YET.
+
+API Documentation
 -------------
 http://eaceaser.github.com/pyrcon
 
@@ -21,42 +28,70 @@ Requirements
 * gevent (http://www.gevent.org)
 * PyYAML (http://pyyaml.org)
 
-Installation
+Installation and Quick Start (Linux/Mac OS X)
 ------------
-Currently PyRCon is installed by installing its dependencies and cloning the git repository.
+First make sure you have a working Python environment. For example:
+
+::
+
+  terminal> python
+  Python 2.7.2 (default, Dec 20 2011, 16:56:46) 
+  [GCC 4.2.1 (Based on Apple Inc. build 5658) (LLVM build 2336.1.00)] on darwin
+  Type "help", "copyright", "credits" or "license" for more information.
+  >>> 
+
+Currently the easiest way to install PyRCon is to clone the git repo. 
+
+::
+
+  git clone git://github.com/eaceaser/pyrcon.git
+
+Alternatively, you can download the current snapshot of the source tree from github: https://github.com/eaceaser/pyrcon/zipball/master
+
+Next, install the python dependencies:
 
 ::
 
   pip install gevent
   pip install pyyaml
-  git clone git://github.com/eaceaser/pyrcon.git
 
-Configuration
--------------
-A sample configuration file is included at ``config/sample.yml``. Edit the file to your heart's content.
+I prefer using ``pip``, but ``easy_install`` should work just fine too.
 
-Running the Server
-------------------
-Currently the server does not daemonize itself. That is coming soon.
+Finally, edit the sample config file located in ``pyrcon/config/sample.yml``. Most importantly, edit the rcon section:
 
 ::
 
-  ./pyrcon.py -c path_to_config.yml
+  rcon:
+    host: YOUR_BF3_SERVER_HOST
+    port: YOUR_BF3_SERVER_RCON_PORT
+    password: YOUR_BF3_SERVER_RCON_PASSWORD
 
-It is recommended to run with ``-vv`` for debug output.
+As well as the server section:
+
+::
+
+  server:
+    password: SOME_PYRCON_PASSWORD
+
+Save your configuration file to a new file, for example, ``config.yml``.
+
+Finally, run PyRCon:
+
+::
+
+  python ./pyrcon.py -c config/config.yml -vv
+
+It is recommended to run with the -vv (verbose) flags as things are currently unstable.
 
 Running the Client
 ------------------
-Currently, PyRCon's client/server authentication model is very simple. Configure a password in your configuration file, and
-then run:
+To run the command line client, run:
 
 ::
 
-  ./pyrconc.py -P PASSWORD
+  term> python pyrconc.py -P SOME_PYRCON_PASSWORD
 
-Client Example
---------------
-An example of the client usage:
+You should be given a ``PyRCon>`` prompt which you can use to interact with the server. For example:
 
 ::
 
@@ -70,6 +105,13 @@ An example of the client usage:
   usage: nextround: Switch server to the next round.
   usage: knownmaps
   usage: teams
+  PyRCon> knownmaps
+  Operation Metro (MP_Subway): ConquestLarge0 ConquestSmall0 RushLarge0 SquadRush0 TeamDeathMatch0 SquadDeathMatch0
+  Sharqi Peninsula (XP1_003): ConquestLarge0 ConquestSmall0 ConquestSmall1 RushLarge0 SquadRush0 TeamDeathMatch0 SquadDeathMatch0
+  Grand Bazaar (MP_001): ConquestLarge0 ConquestSmall0 RushLarge0 SquadRush0 TeamDeathMatch0 SquadDeathMatch0
+  Strike at Karkand (XP1_001): ConquestLarge0 ConquestSmall0 ConquestSmall1 RushLarge0 SquadRush0 TeamDeathMatch0 SquadDeathMatch0
+  Tehran Highway (MP_003): ConquestLarge0 ConquestSmall0 RushLarge0 SquadRush0 TeamDeathMatch0 SquadDeathMatch0
+  ...
   PyRCon> version
   BF3 896646
   PyRCon> maps
@@ -93,15 +135,22 @@ An example of the client usage:
 
 The client has full readline support, including command history and tab completion.
 
+Why not Procon?
+---------------
+
+* Procon is not easy to run crossplatform. It currently relies on having the .NET CLR installed in some form. Most non-Windows servers do not have a CLR environment unless they install Mono, which is not a common package on most server OS distributions. 
+* Procon is not very lightweight or componentized. It is both a layer server as well as a GUI that includes features  such as a map viewer, plugin downloader, etc. I think a more modular architecture where the server is a headless, daemonizable process with no UI provides for a more flexible and easier to manage system.
+* Easier Plugin / Module API. Procon handles plugins by using a very strange C# runtime compilation stage, which makes  writing and testing plugins very difficult. 
+
 General Roadmap
 -------
 * Finish pyrconc client
 * Finish documentation.
-* Add unit testing.
+* Finish testing.
 * Remove the simple JSON protocol and replace it with a strutured protobuf-driven protocol.
 * Start a separate web frontend project for PyRCon.
 * Rewrite the authentication to support multi-user credentials.
-* Add SSL cert based authentication.
+* Add SSL encryption to remote protocols.
 
 Authors
 -------

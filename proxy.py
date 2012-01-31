@@ -39,7 +39,7 @@ class Proxy(object):
 
     d(frostbite.commands.Version, r.version, filter=lambda r: r.split(" "))
     d(frostbite.commands.ServerInfo, r.info, filter=lambda i: ServerState.from_dict(i).to_packet_array())
-    d(frostbite.commands.AdminListPlayers, r.list_players, filter=lambda p: PlayerCollection.from_dict(p).to_packet_array())
+    d(frostbite.commands.AdminListPlayers, r.list_all_players, filter=lambda p: PlayerCollection.from_dict(p).to_packet_array())
     d(frostbite.commands.FrostbiteVariable, r.get_variable, filter=lambda v: [v], extract_args=lambda m:[m.words[0]])
     d(frostbite.commands.MapListList, r.list_maps, filter=lambda m: MapList.from_dict(m).to_packet_array())
     d(frostbite.commands.MapListGetMapIndices, r.get_map_indices)

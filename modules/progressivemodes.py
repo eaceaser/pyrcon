@@ -34,10 +34,10 @@ class ProgressiveModes(EventHandler):
     mode_name = mode["mode"]
     num_rounds = mode["rounds_per_map"]
     logger.debug("Setting current mode to: %s" % mode_name)
-    self._server().clearMapList().get()
+    self._server().clear_map_list().get()
     for map in mode["maps"]:
-      self._server().addMap(map, mode_name, num_rounds).get()
-    self._server().setNextMap(0)
+      self._server().add_map(map, mode_name, num_rounds).get()
+    self._server().set_next_map(0)
     self._current_mode == mode_name
     self._server().set_variable("vars.maxPlayers", mode["limit"])
     self._server().say_all("Switching to: %s" % mode_name)
